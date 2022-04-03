@@ -1,0 +1,16 @@
+{% extends "includes/layout.twig" %}
+
+{% block title %}
+    Error
+{% endblock %}
+
+{% block content %}
+    <h1>Ошибка {{ error.Code }}</h1>
+    <p>
+        {% if error.Message %}
+            {{ error.Message }}
+        {% else %}
+            {{ error.Error() }}
+        {% endif %}
+    </p>
+{% endblock %}

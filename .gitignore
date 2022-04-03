@@ -1,0 +1,5 @@
+/*.idea/
+/*.iml
+/application.yml
+/assets/node_modules/
+/app

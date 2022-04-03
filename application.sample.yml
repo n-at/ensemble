@@ -1,0 +1,7 @@
+web:
+  #Address to listen
+  listen: ":3000"
+  debugTemplates: false
+
+db:
+  url: "postgres://testuser:testuser@localhost:5432/testdatabase?sslmode=disable"

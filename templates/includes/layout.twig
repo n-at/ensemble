@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/assets/node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/node_modules/bootstrap-icons/font/bootstrap-icons.css">
+    <script src="/assets/node_modules/@popperjs/core/dist/umd/popper.min.js"></script>
+    <script src="/assets/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+
+    {% block assets %}{% endblock %}
+
+    <title>{% block title %}PAGE_TITLE{% endblock %}</title>
+</head>
+<body>
+
+{% include "navbar.twig" %}
+
+<div class="container">
+    {% if page_error %}
+        <div class="alert alert-danger">
+            <h5 class="alert-heading">Ошибка</h5>
+            <p>{{ page_error.Error() }}</p>
+        </div>
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+</div>
+
+</body>
+</html>
