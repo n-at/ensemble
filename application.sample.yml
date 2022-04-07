@@ -4,4 +4,4 @@ web:
   debugTemplates: false
 
 db:
-  url: "postgres://testuser:testuser@localhost:5432/testdatabase?sslmode=disable"
+  url: "postgres://ensemble:ensemble@localhost:5432/ensemble?sslmode=disable"
