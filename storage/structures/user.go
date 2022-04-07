@@ -6,8 +6,8 @@ const (
 )
 
 type User struct {
-	id       string
-	login    string
-	password string
-	role     int
+	Id       string
+	Login    string
+	Password string
+	Role     int
 }

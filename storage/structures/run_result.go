@@ -1,7 +1,7 @@
 package structures
 
 type RunResult struct {
-	id     string
-	runId  string
-	output string
+	Id     string
+	RunId  string
+	Output string
 }

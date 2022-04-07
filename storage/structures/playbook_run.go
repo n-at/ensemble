@@ -12,11 +12,11 @@ const (
 )
 
 type PlaybookRun struct {
-	id         string
-	playbookId string
-	userId     string
-	mode       int
-	startTime  time.Time
-	finishTime time.Time
-	result     int
+	Id         string
+	PlaybookId string
+	UserId     string
+	Mode       int
+	StartTime  time.Time
+	FinishTime time.Time
+	Result     int
 }

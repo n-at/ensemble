@@ -1,10 +1,10 @@
 package structures
 
 type Playbook struct {
-	id          string
-	projectId   string
-	filename    string
-	name        string
-	description string
-	locked      bool
+	Id          string
+	ProjectId   string
+	Filename    string
+	Name        string
+	Description string
+	Locked      bool
 }
