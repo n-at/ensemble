@@ -864,4 +864,68 @@ func (s *Storage) PlaybookRunDelete(id string) error {
 //Run Results
 ///////////////////////////////////////////////////////////////////////////////
 
-//TODO
+func (s *Storage) RunResultGet(id string) (*structures.RunResult, error) {
+	query := `select id, run_id, output from run_results where id = $1 and not deleted`
+
+	row := s.db.QueryRow(query, id)
+	if err := row.Err(); err != nil {
+		return nil, err
+	}
+
+	var result structures.RunResult
+	if err := row.Scan(&result.Id, &result.RunId, &result.Output); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *Storage) RunResultInsert(result *structures.RunResult) error {
+	if result == nil {
+		return errors.New("run result insert nil")
+	}
+	if len(result.RunId) == 0 {
+		return errors.New("run result insert empty run id")
+	}
+	if len(result.Id) == 0 {
+		result.Id = NewId()
+	}
+
+	query := `insert into run_results (id, run_id, output) values ($1, $2, $3)`
+
+	_, err := s.db.Exec(query, result.Id, result.RunId, result.Output)
+	return err
+}
+
+func (s *Storage) RunResultUpdate(result *structures.RunResult) error {
+	if result == nil {
+		return errors.New("run result update nil")
+	}
+	if len(result.Id) == 0 {
+		return errors.New("run result update empty id")
+	}
+	if len(result.RunId) == 0 {
+		return errors.New("run result update empty run id")
+	}
+
+	existingResult, err := s.RunResultGet(result.Id)
+	if err != nil {
+		return err
+	}
+	if existingResult == nil {
+		return errors.New("run result update existing result not found")
+	}
+	if existingResult.RunId != result.RunId {
+		return errors.New("run result update cannot change run id")
+	}
+
+	query := `update run_results set output = $1 where id = $2`
+
+	_, err = s.db.Exec(query, result.Output, result.Id)
+	return err
+}
+
+func (s *Storage) RunResultDelete(id string) error {
+	query := `update run_results set deleted = true where id = $1`
+	_, err := s.db.Exec(query, id)
+	return err
+}
