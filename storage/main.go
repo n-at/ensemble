@@ -525,3 +525,88 @@ func (s *Storage) ProjectUserAccessDelete(projectId, userId string) error {
 	}
 	return nil
 }
+
+///////////////////////////////////////////////////////////////////////////////
+//Project Updates
+///////////////////////////////////////////////////////////////////////////////
+
+func scanProjectUpdate(s Scanner) (*structures.ProjectUpdate, error) {
+	var update structures.ProjectUpdate
+	if err := s.Scan(&update.Id, &update.ProjectId, &update.Date, &update.Revision, &update.Log); err != nil {
+		return nil, err
+	}
+	return &update, nil
+}
+
+func (s *Storage) ProjectUpdateGet(id string) (*structures.ProjectUpdate, error) {
+	query := `select id, 
+	                 project_id, 
+                     date, 
+                     revision, 
+                     log 
+              from project_updates 
+              where id = $1 and not deleted`
+
+	row := s.db.QueryRow(query, id)
+	if err := row.Err(); err != nil {
+		return nil, err
+	}
+	return scanProjectUpdate(row)
+}
+
+func (s *Storage) ProjectUpdateGetByProject(projectId string) ([]*structures.ProjectUpdate, error) {
+	query := `select id, 
+	                 project_id, 
+                     date, 
+                     revision, 
+                     log 
+              from project_updates 
+              where project_id = $1 and not deleted
+		      order by date desc`
+
+	rows, err := s.db.Query(query, projectId)
+	if err != nil {
+		return nil, err
+	}
+
+	var updates []*structures.ProjectUpdate
+
+	for rows.Next() {
+		update, err := scanProjectUpdate(rows)
+		if err != nil {
+			log.Warnf("unable to read project update: %s", err)
+			continue
+		}
+		updates = append(updates, update)
+	}
+
+	return updates, nil
+}
+
+func (s *Storage) ProjectUpdateInsert(update *structures.ProjectUpdate) error {
+	if update == nil {
+		return errors.New("project update insert nil")
+	}
+	if len(update.ProjectId) == 0 {
+		return errors.New("project update insert empty project id")
+	}
+	if len(update.Id) == 0 {
+		update.Id = NewId()
+	}
+
+	query := `insert into project_updates (id, project_id, date, revision, log) values ($1, $2, $3, $4, $5)`
+
+	if _, err := s.db.Exec(query, update.Id, update.ProjectId, update.Date, update.Revision, update.Log); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Storage) ProjectUpdateDelete(id string) error {
+	query := `update project_updates set deleted = true where id = $1`
+	if _, err := s.db.Exec(query, id); err != nil {
+		return err
+	}
+	return nil
+}
