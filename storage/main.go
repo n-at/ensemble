@@ -610,3 +610,131 @@ func (s *Storage) ProjectUpdateDelete(id string) error {
 	}
 	return nil
 }
+
+///////////////////////////////////////////////////////////////////////////////
+//Playbooks
+///////////////////////////////////////////////////////////////////////////////
+
+func scanPlaybook(s Scanner) (*structures.Playbook, error) {
+	var playbook structures.Playbook
+	if err := s.Scan(&playbook.Id, &playbook.ProjectId, &playbook.Filename, &playbook.Name, &playbook.Description, &playbook.Locked); err != nil {
+		return nil, err
+	}
+	return &playbook, nil
+}
+
+func (s *Storage) PlaybookGet(id string) (*structures.Playbook, error) {
+	query := `select id, project_id, filename, name, description, locked 
+              from playbooks 
+              where id = $1 and not deleted`
+
+	row := s.db.QueryRow(query, id)
+	if err := row.Err(); err != nil {
+		return nil, err
+	}
+
+	return scanPlaybook(row)
+}
+
+func (s *Storage) PlaybookGetByProject(projectId string) ([]*structures.Playbook, error) {
+	query := `select id, project_id, filename, name, description, locked 
+              from playbooks 
+              where project_id = $1 and not deleted
+              order by name, filename`
+
+	rows, err := s.db.Query(query, projectId)
+	if err != nil {
+		return nil, err
+	}
+
+	var playbooks []*structures.Playbook
+
+	for rows.Next() {
+		playbook, err := scanPlaybook(rows)
+		if err != nil {
+			log.Warnf("unable to read playbook: %s", err)
+			continue
+		}
+		playbooks = append(playbooks, playbook)
+	}
+
+	return playbooks, nil
+}
+
+func (s *Storage) PlaybookInsert(playbook *structures.Playbook) error {
+	if playbook == nil {
+		return errors.New("playbook insert nil")
+	}
+	if len(playbook.ProjectId) == 0 {
+		return errors.New("playbook insert empty project id")
+	}
+	if len(playbook.Filename) == 0 {
+		return errors.New("playbook insert empty file name")
+	}
+	if len(playbook.Id) == 0 {
+		playbook.Id = NewId()
+	}
+
+	query := `insert into playbooks (id, project_id, filename, name, description, locked) values ($1, $2, $3, $4, $5, $6)`
+
+	if _, err := s.db.Exec(
+		query,
+		playbook.Id,
+		playbook.ProjectId,
+		playbook.Filename,
+		playbook.Name,
+		playbook.Description,
+		playbook.Locked); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Storage) PlaybookUpdate(playbook *structures.Playbook) error {
+	if playbook == nil {
+		return errors.New("playbook update nil")
+	}
+	if len(playbook.Id) == 0 {
+		return errors.New("playbook update empty id")
+	}
+	if len(playbook.ProjectId) == 0 {
+		return errors.New("playbook update empty project id")
+	}
+	if len(playbook.Filename) == 0 {
+		return errors.New("playbook update empty file name")
+	}
+
+	existingPlaybook, err := s.PlaybookGet(playbook.Id)
+	if err != nil {
+		return err
+	}
+	if existingPlaybook == nil {
+		return errors.New("playbook update existing not found")
+	}
+	if existingPlaybook.ProjectId != playbook.ProjectId {
+		return errors.New("playbook update cannot change project id")
+	}
+
+	query := `update playbooks set filename=$1, name=$2, description=$3, locked=$4 where id=$5`
+
+	if _, err := s.db.Exec(query, playbook.Filename, playbook.Name, playbook.Description, playbook.Locked, playbook.Id); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Storage) PlaybookDelete(id string) error {
+	query := `update playbooks set deleted=true where id=$1`
+	if _, err := s.db.Exec(query, id); err != nil {
+		return err
+	}
+	return nil
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//Playbook Runs
+///////////////////////////////////////////////////////////////////////////////
+
+//TODO
