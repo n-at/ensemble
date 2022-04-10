@@ -176,11 +176,9 @@ func (s *Storage) UserInsert(user *structures.User) error {
 	}
 
 	query := `insert into users (id, login, password, role) values ($1, $2, $3, $4)`
-	if _, err := s.db.Exec(query, user.Id, user.Login, user.Password, user.Role); err != nil {
-		return err
-	}
 
-	return nil
+	_, err := s.db.Exec(query, user.Id, user.Login, user.Password, user.Role)
+	return err
 }
 
 func (s *Storage) UserUpdate(user *structures.User) error {
@@ -209,19 +207,15 @@ func (s *Storage) UserUpdate(user *structures.User) error {
 	}
 
 	query := `update users set login = $1, password = $2, role = $3 where id = $4`
-	if _, err := s.db.Exec(query, user.Login, user.Password, user.Role, user.Id); err != nil {
-		return err
-	}
 
-	return nil
+	_, err = s.db.Exec(query, user.Login, user.Password, user.Role, user.Id)
+	return err
 }
 
 func (s *Storage) UserDelete(id string) error {
 	query := `update users set deleted=true where id = $1`
-	if _, err := s.db.Exec(query, id); err != nil {
-		return err
-	}
-	return nil
+	_, err := s.db.Exec(query, id)
+	return err
 }
 
 func (s *Storage) UserEnsureAdminExists() error {
@@ -407,7 +401,7 @@ func (s *Storage) ProjectInsert(project *structures.Project) error {
 	inventoryList := strings.Join(project.InventoryList, "|")
 	variablesList := strings.Join(project.VariablesList, "|")
 
-	if _, err := s.db.Exec(
+	_, err := s.db.Exec(
 		query,
 		project.Id,
 		project.Name,
@@ -418,11 +412,8 @@ func (s *Storage) ProjectInsert(project *structures.Project) error {
 		inventoryList,
 		project.Variables,
 		variablesList,
-		project.VaultPassword); err != nil {
-		return err
-	}
-
-	return nil
+		project.VaultPassword)
+	return err
 }
 
 func (s *Storage) ProjectUpdate(project *structures.Project) error {
@@ -467,7 +458,7 @@ func (s *Storage) ProjectUpdate(project *structures.Project) error {
 	inventoryList := strings.Join(project.InventoryList, "|")
 	variablesList := strings.Join(project.VariablesList, "|")
 
-	if _, err := s.db.Exec(
+	_, err = s.db.Exec(
 		query,
 		project.Name,
 		project.Description,
@@ -478,19 +469,14 @@ func (s *Storage) ProjectUpdate(project *structures.Project) error {
 		project.Variables,
 		variablesList,
 		project.VaultPassword,
-		project.Id); err != nil {
-		return err
-	}
-
-	return nil
+		project.Id)
+	return err
 }
 
 func (s *Storage) ProjectDelete(id string) error {
 	query := `update projects set deleted = true where id = $1`
-	if _, err := s.db.Exec(query, id); err != nil {
-		return err
-	}
-	return nil
+	_, err := s.db.Exec(query, id)
+	return err
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -512,18 +498,14 @@ func (s *Storage) ProjectUserAccessCreate(projectId, userId string) error {
 	}
 
 	query := `insert into projects_users_access (project_id, user_id) values ($1, $2)`
-	if _, err := s.db.Exec(query, projectId, userId); err != nil {
-		return err
-	}
-	return nil
+	_, err := s.db.Exec(query, projectId, userId)
+	return err
 }
 
 func (s *Storage) ProjectUserAccessDelete(projectId, userId string) error {
 	query := `delete from projects_users_access where project_id = $1 and user_id = $2`
-	if _, err := s.db.Exec(query, projectId, userId); err != nil {
-		return err
-	}
-	return nil
+	_, err := s.db.Exec(query, projectId, userId)
+	return err
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -596,19 +578,14 @@ func (s *Storage) ProjectUpdateInsert(update *structures.ProjectUpdate) error {
 
 	query := `insert into project_updates (id, project_id, date, revision, log) values ($1, $2, $3, $4, $5)`
 
-	if _, err := s.db.Exec(query, update.Id, update.ProjectId, update.Date, update.Revision, update.Log); err != nil {
-		return err
-	}
-
-	return nil
+	_, err := s.db.Exec(query, update.Id, update.ProjectId, update.Date, update.Revision, update.Log)
+	return err
 }
 
 func (s *Storage) ProjectUpdateDelete(id string) error {
 	query := `update project_updates set deleted = true where id = $1`
-	if _, err := s.db.Exec(query, id); err != nil {
-		return err
-	}
-	return nil
+	_, err := s.db.Exec(query, id)
+	return err
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -677,18 +654,15 @@ func (s *Storage) PlaybookInsert(playbook *structures.Playbook) error {
 
 	query := `insert into playbooks (id, project_id, filename, name, description, locked) values ($1, $2, $3, $4, $5, $6)`
 
-	if _, err := s.db.Exec(
+	_, err := s.db.Exec(
 		query,
 		playbook.Id,
 		playbook.ProjectId,
 		playbook.Filename,
 		playbook.Name,
 		playbook.Description,
-		playbook.Locked); err != nil {
-		return err
-	}
-
-	return nil
+		playbook.Locked)
+	return err
 }
 
 func (s *Storage) PlaybookUpdate(playbook *structures.Playbook) error {
@@ -718,23 +692,176 @@ func (s *Storage) PlaybookUpdate(playbook *structures.Playbook) error {
 
 	query := `update playbooks set filename=$1, name=$2, description=$3, locked=$4 where id=$5`
 
-	if _, err := s.db.Exec(query, playbook.Filename, playbook.Name, playbook.Description, playbook.Locked, playbook.Id); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = s.db.Exec(query, playbook.Filename, playbook.Name, playbook.Description, playbook.Locked, playbook.Id)
+	return err
 }
 
 func (s *Storage) PlaybookDelete(id string) error {
 	query := `update playbooks set deleted=true where id=$1`
-	if _, err := s.db.Exec(query, id); err != nil {
-		return err
-	}
-	return nil
+	_, err := s.db.Exec(query, id)
+	return err
+}
+
+func (s *Storage) PlaybookLock(id string, value bool) error {
+	query := `update playbooks set locked = $1 where id = $2`
+	_, err := s.db.Exec(query, value, id)
+	return err
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //Playbook Runs
+///////////////////////////////////////////////////////////////////////////////
+
+func scanPlaybookRun(s Scanner) (*structures.PlaybookRun, error) {
+	var run structures.PlaybookRun
+	if err := s.Scan(&run.Id, &run.PlaybookId, &run.UserId, &run.Mode, &run.StartTime, &run.FinishTime, &run.Result); err != nil {
+		return nil, err
+	}
+	return &run, nil
+}
+
+func (s *Storage) PlaybookRunGet(id string) (*structures.PlaybookRun, error) {
+	query := `select id, 
+                     playbook_id, 
+                     user_id, 
+                     mode, 
+                     start_time, 
+                     finish_time, 
+                     result 
+              from playbook_runs 
+              where id = $1 and not deleted`
+
+	row := s.db.QueryRow(query, id)
+	if err := row.Err(); err != nil {
+		return nil, err
+	}
+
+	return scanPlaybookRun(row)
+}
+
+func (s *Storage) PlaybookRunGetLatest(playbookId string) (*structures.PlaybookRun, error) {
+	query := `select id, 
+                     playbook_id, 
+                     user_id, 
+                     mode, 
+                     start_time, 
+                     finish_time, 
+                     result 
+              from playbook_runs 
+              where playbook_id = $1 and not deleted
+              order by start_time desc
+              limit 1`
+
+	row := s.db.QueryRow(query, playbookId)
+	if err := row.Err(); err != nil {
+		return nil, err
+	}
+
+	return scanPlaybookRun(row)
+}
+
+func (s *Storage) PlaybookRunGetByPlaybook(playbookId string) ([]*structures.PlaybookRun, error) {
+	query := `select id, 
+                     playbook_id, 
+                     user_id, 
+                     mode, 
+                     start_time, 
+                     finish_time, 
+                     result 
+              from playbook_runs 
+              where playbook_id = $1 and not deleted
+              order by start_time desc`
+
+	rows, err := s.db.Query(query, playbookId)
+	if err != nil {
+		return nil, err
+	}
+
+	var runs []*structures.PlaybookRun
+
+	for rows.Next() {
+		run, err := scanPlaybookRun(rows)
+		if err != nil {
+			log.Warnf("unable to read playbook run: %s", err)
+			continue
+		}
+		runs = append(runs, run)
+	}
+
+	return runs, nil
+}
+
+func (s *Storage) PlaybookRunInsert(run *structures.PlaybookRun) error {
+	if run == nil {
+		return errors.New("playbook run insert nil")
+	}
+	if len(run.PlaybookId) == 0 {
+		return errors.New("playbook run insert empty playbook id")
+	}
+	if len(run.UserId) == 0 {
+		return errors.New("playbook run insert empty user id")
+	}
+	if len(run.Id) == 0 {
+		run.Id = NewId()
+	}
+
+	query := `insert into playbook_runs (id, playbook_id, user_id, mode, start_time, finish_time, result)
+              values ($1, $2, $3, $4, $5, $6, $7)`
+
+	_, err := s.db.Exec(
+		query,
+		run.Id,
+		run.PlaybookId,
+		run.UserId,
+		run.Mode,
+		run.StartTime,
+		run.FinishTime,
+		run.Result)
+	return err
+}
+
+func (s *Storage) PlaybookRunUpdate(run *structures.PlaybookRun) error {
+	if run == nil {
+		return errors.New("playbook run update nil")
+	}
+	if len(run.Id) == 0 {
+		return errors.New("playbook run update empty id")
+	}
+	if len(run.PlaybookId) == 0 {
+		return errors.New("playbook run update empty playbook id")
+	}
+	if len(run.UserId) == 0 {
+		return errors.New("playbook run update empty user id")
+	}
+
+	existingRun, err := s.PlaybookRunGet(run.Id)
+	if err != nil {
+		return err
+	}
+	if existingRun == nil {
+		return errors.New("playbook run update existing run not found")
+	}
+	if existingRun.PlaybookId != run.PlaybookId {
+		return errors.New("playbook run update cannot change playbook id")
+	}
+	if existingRun.UserId != run.UserId {
+		return errors.New("playbook run update cannot change user id")
+	}
+
+	query := `update playbook_runs set mode = $1, start_time = $2, finish_time = $3, result = $4 where id = $5`
+
+	_, err = s.db.Exec(query, run.Mode, run.StartTime, run.FinishTime, run.Result, run.Id)
+	return err
+}
+
+func (s *Storage) PlaybookRunDelete(id string) error {
+	query := `update playbook_runs set deleted = true where id = $1`
+	_, err := s.db.Exec(query, id)
+	return err
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//Run Results
 ///////////////////////////////////////////////////////////////////////////////
 
 //TODO
