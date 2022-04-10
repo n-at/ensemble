@@ -492,3 +492,36 @@ func (s *Storage) ProjectDelete(id string) error {
 	}
 	return nil
 }
+
+///////////////////////////////////////////////////////////////////////////////
+//Project User Access
+///////////////////////////////////////////////////////////////////////////////
+
+func (s *Storage) ProjectUserAccessExists(projectId, userId string) bool {
+	query := `select count(1) from projects_users_access where project_id = $1 and user_id = $2`
+	row := s.db.QueryRow(query, projectId, userId)
+	return queryExistsHelper(row)
+}
+
+func (s *Storage) ProjectUserAccessCreate(projectId, userId string) error {
+	if len(projectId) == 0 {
+		return errors.New("project user access empty project id")
+	}
+	if len(userId) == 0 {
+		return errors.New("project user access empty user id")
+	}
+
+	query := `insert into projects_users_access (project_id, user_id) values ($1, $2)`
+	if _, err := s.db.Exec(query, projectId, userId); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Storage) ProjectUserAccessDelete(projectId, userId string) error {
+	query := `delete from projects_users_access where project_id = $1 and user_id = $2`
+	if _, err := s.db.Exec(query, projectId, userId); err != nil {
+		return err
+	}
+	return nil
+}
