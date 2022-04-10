@@ -5,6 +5,7 @@ import (
 	"ensemble/storage/structures"
 	"errors"
 	_ "github.com/lib/pq"
+	log "github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -208,6 +209,31 @@ func (s *Storage) UserDelete(id string) error {
 	if _, err := s.db.Exec(query, id); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (s *Storage) UserEnsureAdminExists() error {
+	if s.UserAnyExists() {
+		return nil
+	}
+
+	adminPassword := GenerateRandomString(12)
+	adminPasswordEncrypted, err := EncryptPassword(adminPassword)
+	if err != nil {
+		return err
+	}
+
+	admin := &structures.User{
+		Login:    "admin",
+		Password: adminPasswordEncrypted,
+		Role:     structures.UserRoleAdmin,
+	}
+	if err := s.UserInsert(admin); err != nil {
+		return err
+	}
+
+	log.Infof("CREATED ADMIN, login: %s, password: %s", admin.Login, adminPassword)
+
 	return nil
 }
 

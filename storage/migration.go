@@ -152,6 +152,24 @@ var migrations = []Migration{
 		version: 14,
 		name:    "session.created field",
 		query:   `alter table sessions add column created timestamp`,
+	}, {
+		version: 15,
+		name:    "projects users access table",
+		query: `
+			create table projects_users_access (
+				project_id varchar(64) not null,
+				user_id varchar(64) not null,
+				constraint projects_users_access_pk primary key (project_id, user_id)
+			)
+		`,
+	}, {
+		version: 16,
+		name:    "projects_users_access.project_id index",
+		query:   `create index if not exists projects_users_access_project_id on projects_users_access (project_id)`,
+	}, {
+		version: 17,
+		name:    "projects_users_access.user_id index",
+		query:   `create index if not exists projects_users_access_user_id on projects_users_access (user_id)`,
 	},
 }
 

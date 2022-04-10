@@ -49,6 +49,10 @@ func main() {
 	}
 	defer store.Close()
 
+	if err := store.UserEnsureAdminExists(); err != nil {
+		log.Fatalf("unable to create admin: %s", err)
+	}
+
 	server := web.New(webConfiguration, store)
 	log.Fatal(server.Start(webConfiguration.Listen))
 }
