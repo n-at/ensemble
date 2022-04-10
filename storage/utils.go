@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"math/rand"
 	"strings"
@@ -35,4 +36,8 @@ func EncryptPassword(password string) (string, error) {
 func CheckPassword(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
+}
+
+func NewId() string {
+	return uuid.New().String()
 }

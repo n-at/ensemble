@@ -139,6 +139,19 @@ var migrations = []Migration{
 		version: 12,
 		name:    "run_results.run_id index",
 		query:   `create index if not exists run_results_run_id on run_results (run_id)`,
+	}, {
+		version: 13,
+		name:    "sessions table",
+		query: `
+			create table sessions (
+				id      varchar(64) 	primary key,
+				user_id varchar(64) 	not null
+			)
+		`,
+	}, {
+		version: 14,
+		name:    "session.created field",
+		query:   `alter table sessions add column created timestamp`,
 	},
 }
 

@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"time"
 )
 
 type Configuration struct {
@@ -16,6 +17,11 @@ type Configuration struct {
 type Server struct {
 	e     *echo.Echo
 	store *storage.Storage
+}
+
+type EnsembleContext struct {
+	echo.Context
+	server *Server
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -33,6 +39,8 @@ func New(configuration Configuration, store *storage.Storage) *Server {
 		store: store,
 	}
 
+	server.e.Use(server.contextCustomizationHandler)
+
 	//TODO handlers
 	server.e.GET("/", server.index)
 
@@ -43,6 +51,13 @@ func New(configuration Configuration, store *storage.Storage) *Server {
 
 func (s *Server) Start(listen string) error {
 	return s.e.Start(listen)
+}
+
+func (s *Server) contextCustomizationHandler(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ensembleContext := &EnsembleContext{c, s}
+		return next(ensembleContext)
+	}
 }
 
 // httpErrorHandler Custom HTTP error handler
@@ -60,4 +75,32 @@ func httpErrorHandler(e error, c echo.Context) {
 	if err != nil {
 		log.Errorf("error page render error: %s", err)
 	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+func (c *EnsembleContext) GetSessionId() string {
+	cookie, err := c.Cookie("ensemble-session-id")
+	if err != nil {
+		return ""
+	}
+	return cookie.Value
+}
+
+func (c *EnsembleContext) SetSessionId(id string) {
+	cookie := &http.Cookie{
+		Name:    "ensemble-session-id",
+		Value:   id,
+		Expires: time.Now().Add(-24 * time.Hour),
+	}
+	c.SetCookie(cookie)
+}
+
+func (c *EnsembleContext) DeleteSessionId() {
+	cookie := &http.Cookie{
+		Name:    "ensemble-session-id",
+		Value:   "",
+		Expires: time.Now().Add(-24 * time.Hour),
+	}
+	c.SetCookie(cookie)
 }
