@@ -6,6 +6,7 @@ import (
 	"errors"
 	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
+	"strings"
 	"time"
 )
 
@@ -15,6 +16,10 @@ type Configuration struct {
 
 type Storage struct {
 	db *sql.DB
+}
+
+type Scanner interface {
+	Scan(dest ...any) error
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -54,6 +59,8 @@ func queryExistsHelper(row *sql.Row) bool {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//Session
+///////////////////////////////////////////////////////////////////////////////
 
 func (s *Storage) SessionCreate(userId string) (*structures.Session, error) {
 	id := NewId()
@@ -88,6 +95,16 @@ func (s *Storage) SessionGet(id string) (*structures.Session, error) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//User
+///////////////////////////////////////////////////////////////////////////////
+
+func scanUser(s Scanner) (*structures.User, error) {
+	var user structures.User
+	if err := s.Scan(&user.Id, &user.Login, &user.Password, &user.Role); err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
 
 func (s *Storage) UserAnyExists() bool {
 	query := `select count(1) from users`
@@ -96,13 +113,13 @@ func (s *Storage) UserAnyExists() bool {
 }
 
 func (s *Storage) UserExists(id string) bool {
-	query := `select count(1) from users where id = $1`
+	query := `select count(1) from users where id = $1 and not deleted`
 	row := s.db.QueryRow(query, id)
 	return queryExistsHelper(row)
 }
 
 func (s *Storage) UserExistsByLogin(login string) bool {
-	query := `select count(1) from users where login = $1`
+	query := `select count(1) from users where login = $1 and not deleted`
 	row := s.db.QueryRow(query, login)
 	return queryExistsHelper(row)
 }
@@ -113,13 +130,7 @@ func (s *Storage) UserGet(id string) (*structures.User, error) {
 	if err := row.Err(); err != nil {
 		return nil, err
 	}
-
-	var user structures.User
-	if err := row.Scan(&user.Id, &user.Login, &user.Password, &user.Role); err != nil {
-		return nil, err
-	}
-
-	return &user, nil
+	return scanUser(row)
 }
 
 func (s *Storage) UserGetAll() ([]*structures.User, error) {
@@ -133,11 +144,12 @@ func (s *Storage) UserGetAll() ([]*structures.User, error) {
 	var users []*structures.User
 
 	for rows.Next() {
-		var user structures.User
-		if err := rows.Scan(&user.Id, &user.Login, &user.Password, &user.Role); err != nil {
+		user, err := scanUser(rows)
+		if err != nil {
+			log.Warnf("unable to read user: %s", err)
 			continue
 		}
-		users = append(users, &user)
+		users = append(users, user)
 	}
 
 	return users, nil
@@ -238,3 +250,245 @@ func (s *Storage) UserEnsureAdminExists() error {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//Project
+///////////////////////////////////////////////////////////////////////////////
+
+func scanProject(s Scanner) (*structures.Project, error) {
+	var project structures.Project
+	var inventoryList, variablesList string
+	if err := s.Scan(
+		&project.Id,
+		&project.Name,
+		&project.Description,
+		&project.RepositoryUrl,
+		&project.RepositoryBranch,
+		&project.Inventory,
+		&inventoryList,
+		&project.Variables,
+		&variablesList,
+		&project.VaultPassword); err != nil {
+		return nil, err
+	}
+
+	project.InventoryList = strings.Split(inventoryList, "|")
+	project.VariablesList = strings.Split(variablesList, "|")
+
+	return &project, nil
+}
+
+func (s *Storage) ProjectExists(id string) bool {
+	query := `select count(1) from projects where id = $1 and not deleted`
+	row := s.db.QueryRow(query, id)
+	return queryExistsHelper(row)
+}
+
+func (s *Storage) ProjectExistsByName(name string) bool {
+	query := `select count(1) from projects where name = $1 and not null`
+	row := s.db.QueryRow(query, name)
+	return queryExistsHelper(row)
+}
+
+func (s *Storage) ProjectGet(id string) (*structures.Project, error) {
+	query := `select id, 
+                     name, 
+                     description, 
+                     repo_url, 
+                     repo_branch, 
+                     inventory, 
+                     inventory_list, 
+                     variables, 
+                     variables_list,
+                     vault_password
+              from projects
+              where id = $1 and not deleted
+	`
+
+	row := s.db.QueryRow(query, id)
+	if err := row.Err(); err != nil {
+		return nil, err
+	}
+
+	return scanProject(row)
+}
+
+func (s *Storage) ProjectGetAll() ([]*structures.Project, error) {
+	query := `select id, 
+                     name, 
+                     description, 
+                     repo_url, 
+                     repo_branch, 
+                     inventory, 
+                     inventory_list, 
+                     variables, 
+                     variables_list,
+                     vault_password
+              from projects
+              where not deleted
+              order by name
+	`
+
+	rows, err := s.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	var projects []*structures.Project
+	for rows.Next() {
+		project, err := scanProject(rows)
+		if err != nil {
+			log.Warnf("unable to read project: %s", err)
+			continue
+		}
+		projects = append(projects, project)
+	}
+
+	return projects, nil
+}
+
+func (s *Storage) ProjectGetByUser(userId string) ([]*structures.Project, error) {
+	query := `select id, 
+                     name, 
+                     description, 
+                     repo_url, 
+                     repo_branch, 
+                     inventory, 
+                     inventory_list, 
+                     variables, 
+                     variables_list,
+                     vault_password
+              from projects 
+                left join projects_users_access on (projects_users_access.project_id = projects.id) 
+              where not deleted and projects_users_access.user_id = $1
+              order by name
+	`
+
+	rows, err := s.db.Query(query, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	var projects []*structures.Project
+	for rows.Next() {
+		project, err := scanProject(rows)
+		if err != nil {
+			log.Warnf("unable to read project: %s", err)
+		}
+		projects = append(projects, project)
+	}
+
+	return projects, nil
+}
+
+func (s *Storage) ProjectInsert(project *structures.Project) error {
+	if project == nil {
+		return errors.New("project insert nil")
+	}
+	if len(project.Name) == 0 {
+		return errors.New("project insert empty name")
+	}
+	if len(project.RepositoryUrl) == 0 {
+		return errors.New("project insert empty repository url")
+	}
+	if s.ProjectExistsByName(project.Name) {
+		return errors.New("project insert name exists")
+	}
+	if len(project.Id) == 0 {
+		project.Id = NewId()
+	}
+	if len(project.RepositoryBranch) == 0 {
+		project.RepositoryBranch = structures.ProjectDefaultBranchName
+	}
+
+	query := `
+		insert into projects (id, name, description, repo_url, repo_branch, inventory, inventory_list, variables, variables_list, vault_password) 
+		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+	`
+
+	inventoryList := strings.Join(project.InventoryList, "|")
+	variablesList := strings.Join(project.VariablesList, "|")
+
+	if _, err := s.db.Exec(
+		query,
+		project.Id,
+		project.Name,
+		project.Description,
+		project.RepositoryUrl,
+		project.RepositoryBranch,
+		project.Inventory,
+		inventoryList,
+		project.Variables,
+		variablesList,
+		project.VaultPassword); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Storage) ProjectUpdate(project *structures.Project) error {
+	if project == nil {
+		return errors.New("project update nil")
+	}
+	if len(project.Id) == 0 {
+		return errors.New("project update empty id")
+	}
+	if len(project.Name) == 0 {
+		return errors.New("project update empty name")
+	}
+	if len(project.RepositoryUrl) == 0 {
+		return errors.New("project update empty repository url")
+	}
+
+	existingProject, err := s.ProjectGet(project.Id)
+	if err != nil {
+		return err
+	}
+	if existingProject == nil {
+		return errors.New("project update project does not exist")
+	}
+	if existingProject.Name != project.Name && s.ProjectExistsByName(project.Name) {
+		return errors.New("project update name exists")
+	}
+
+	query := `
+		update projects set 
+			name = $1, 
+			description = $2, 
+			repo_url = $3, 
+			repo_branch = $4,
+			inventory = $5,
+			inventory_list = $6,
+			variables = $7,
+			variables_list = $8,
+			vault_password = $9
+		where id = $10
+	`
+
+	inventoryList := strings.Join(project.InventoryList, "|")
+	variablesList := strings.Join(project.VariablesList, "|")
+
+	if _, err := s.db.Exec(
+		query,
+		project.Name,
+		project.Description,
+		project.RepositoryUrl,
+		project.RepositoryBranch,
+		project.Inventory,
+		inventoryList,
+		project.Variables,
+		variablesList,
+		project.VaultPassword,
+		project.Id); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Storage) ProjectDelete(id string) error {
+	query := `update projects set deleted = true where id = $1`
+	if _, err := s.db.Exec(query, id); err != nil {
+		return err
+	}
+	return nil
+}

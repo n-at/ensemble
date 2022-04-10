@@ -1,5 +1,9 @@
 package structures
 
+const (
+	ProjectDefaultBranchName = "master"
+)
+
 type Project struct {
 	Id               string
 	Name             string

@@ -170,6 +170,10 @@ var migrations = []Migration{
 		version: 17,
 		name:    "projects_users_access.user_id index",
 		query:   `create index if not exists projects_users_access_user_id on projects_users_access (user_id)`,
+	}, {
+		version: 18,
+		name:    "projects.name index",
+		query:   `create index if not exists projects_name on projects (name)`,
 	},
 }
 
