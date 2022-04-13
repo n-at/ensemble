@@ -1,6 +1,7 @@
 package main
 
 import (
+	"ensemble/repository"
 	"ensemble/storage"
 	"ensemble/web"
 	log "github.com/sirupsen/logrus"
@@ -9,8 +10,9 @@ import (
 )
 
 var (
-	webConfiguration     web.Configuration
-	storageConfiguration storage.Configuration
+	webConfig        web.Configuration
+	storageConfig    storage.Configuration
+	repositoryConfig repository.Configuration
 )
 
 func init() {
@@ -27,23 +29,32 @@ func init() {
 		log.Fatalf("unable to read config file: %s", err)
 	}
 
-	webConfiguration = web.Configuration{
+	webConfig = web.Configuration{
 		DebugTemplates: false,
 		Listen:         ":3000",
 	}
-	if err := viper.UnmarshalKey("web", &webConfiguration); err != nil {
+	if err := viper.UnmarshalKey("web", &webConfig); err != nil {
 		log.Fatalf("unable to read web configuration: %s", err)
 	}
 
-	storageConfiguration = storage.Configuration{}
-	if err := viper.UnmarshalKey("db", &storageConfiguration); err != nil {
+	storageConfig = storage.Configuration{}
+	if err := viper.UnmarshalKey("db", &storageConfig); err != nil {
 		log.Fatalf("unable to read db configuration: %s", err)
 	}
-	log.Infof("db: %v", storageConfiguration)
+	log.Infof("db: %v", storageConfig)
+
+	path := viper.GetString("path")
+	if len(path) == 0 {
+		log.Fatalf("path not defined")
+	}
+
+	repositoryConfig = repository.Configuration{
+		Path: path,
+	}
 }
 
 func main() {
-	store, err := storage.New(storageConfiguration)
+	store, err := storage.New(storageConfig)
 	if err != nil {
 		log.Fatalf("unable to create storage: %s", err)
 	}
@@ -53,6 +64,9 @@ func main() {
 		log.Fatalf("unable to create admin: %s", err)
 	}
 
-	server := web.New(webConfiguration, store)
-	log.Fatal(server.Start(webConfiguration.Listen))
+	manager := repository.New(repositoryConfig, store)
+	manager.UpdateAll() //TODO make schedule
+
+	server := web.New(webConfig, store, manager)
+	log.Fatal(server.Start(webConfig.Listen))
 }

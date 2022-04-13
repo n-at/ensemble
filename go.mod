@@ -4,15 +4,16 @@ go 1.18
 
 require (
 	github.com/flosch/pongo2/v4 v4.0.2
+	github.com/google/uuid v1.3.0
 	github.com/labstack/echo/v4 v4.7.2
 	github.com/lib/pq v1.10.4
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.10.1
 	golang.org/x/crypto v0.0.0-20220331220935-ae2d96664a29
-	github.com/google/uuid v1.3.0
 )
 
 require (
+	github.com/alessio/shellescape v1.4.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/labstack/gommon v0.3.1 // indirect

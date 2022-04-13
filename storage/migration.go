@@ -174,6 +174,10 @@ var migrations = []Migration{
 		version: 18,
 		name:    "projects.name index",
 		query:   `create index if not exists projects_name on projects (name)`,
+	}, {
+		version: 19,
+		name:    "project_updates.success field",
+		query:   `alter table project_updates add column success boolean`,
 	},
 }
 

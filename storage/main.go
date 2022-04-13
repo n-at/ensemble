@@ -277,7 +277,7 @@ func (s *Storage) ProjectExists(id string) bool {
 }
 
 func (s *Storage) ProjectExistsByName(name string) bool {
-	query := `select count(1) from projects where name = $1 and not null`
+	query := `select count(1) from projects where name = $1 and not deleted`
 	row := s.db.QueryRow(query, name)
 	return queryExistsHelper(row)
 }
@@ -514,7 +514,7 @@ func (s *Storage) ProjectUserAccessDelete(projectId, userId string) error {
 
 func scanProjectUpdate(s Scanner) (*structures.ProjectUpdate, error) {
 	var update structures.ProjectUpdate
-	if err := s.Scan(&update.Id, &update.ProjectId, &update.Date, &update.Revision, &update.Log); err != nil {
+	if err := s.Scan(&update.Id, &update.ProjectId, &update.Date, &update.Success, &update.Revision, &update.Log); err != nil {
 		return nil, err
 	}
 	return &update, nil
@@ -524,6 +524,7 @@ func (s *Storage) ProjectUpdateGet(id string) (*structures.ProjectUpdate, error)
 	query := `select id, 
 	                 project_id, 
                      date, 
+                     success,
                      revision, 
                      log 
               from project_updates 
@@ -540,6 +541,7 @@ func (s *Storage) ProjectUpdateGetByProject(projectId string) ([]*structures.Pro
 	query := `select id, 
 	                 project_id, 
                      date, 
+                     success,
                      revision, 
                      log 
               from project_updates 
@@ -565,6 +567,26 @@ func (s *Storage) ProjectUpdateGetByProject(projectId string) ([]*structures.Pro
 	return updates, nil
 }
 
+func (s *Storage) ProjectUpdateGetProjectLatest(projectId string) (*structures.ProjectUpdate, error) {
+	query := `select id, 
+	                 project_id, 
+                     date, 
+                     success,
+                     revision, 
+                     log 
+              from project_updates 
+              where project_id = $1 and not deleted
+		      order by date desc
+			  limit 1`
+
+	row := s.db.QueryRow(query, projectId)
+	if err := row.Err(); err != nil {
+		return nil, err
+	}
+
+	return scanProjectUpdate(row)
+}
+
 func (s *Storage) ProjectUpdateInsert(update *structures.ProjectUpdate) error {
 	if update == nil {
 		return errors.New("project update insert nil")
@@ -576,9 +598,9 @@ func (s *Storage) ProjectUpdateInsert(update *structures.ProjectUpdate) error {
 		update.Id = NewId()
 	}
 
-	query := `insert into project_updates (id, project_id, date, revision, log) values ($1, $2, $3, $4, $5)`
+	query := `insert into project_updates (id, project_id, date, success, revision, log) values ($1, $2, $3, $4, $5, $6)`
 
-	_, err := s.db.Exec(query, update.Id, update.ProjectId, update.Date, update.Revision, update.Log)
+	_, err := s.db.Exec(query, update.Id, update.ProjectId, update.Date, update.Success, update.Revision, update.Log)
 	return err
 }
 
