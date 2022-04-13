@@ -245,7 +245,7 @@ func (m *Manager) updateProjectInfo(p *structures.Project) error {
 	}
 	p.VariablesVault = exists
 
-	inventories, err := m.getInventories(p)
+	inventories, err := m.projectInventories(p)
 	if err != nil {
 		return err
 	}
@@ -262,7 +262,7 @@ func (m *Manager) updateProjectInfo(p *structures.Project) error {
 		p.Inventory = "main.yml"
 	}
 
-	variables, err := m.getVariables(p)
+	variables, err := m.projectVariables(p)
 	if err != nil {
 		return err
 	}
@@ -279,7 +279,7 @@ func (m *Manager) updateProjectInfo(p *structures.Project) error {
 		p.Variables = ""
 	}
 
-	collections, err := m.getCollections(p)
+	collections, err := m.projectCollections(p)
 	if err != nil {
 		return err
 	}
@@ -292,7 +292,7 @@ func (m *Manager) updateProjectInfo(p *structures.Project) error {
 	return nil
 }
 
-func (m *Manager) getCollections(p *structures.Project) ([]string, error) {
+func (m *Manager) projectCollections(p *structures.Project) ([]string, error) {
 	collectionsFile := fmt.Sprintf("%s/collections.txt", m.projectDirectory(p))
 	exists, err := fileExists(collectionsFile)
 	if err != nil {
@@ -309,7 +309,7 @@ func (m *Manager) getCollections(p *structures.Project) ([]string, error) {
 	return strings.Split(string(bytes), "\n"), nil
 }
 
-func (m *Manager) getVariables(p *structures.Project) ([]string, error) {
+func (m *Manager) projectVariables(p *structures.Project) ([]string, error) {
 	variablesDirectory := fmt.Sprintf("%s/vars", m.projectDirectory(p))
 	exists, err := directoryExists(variablesDirectory)
 	if err != nil {
@@ -346,7 +346,7 @@ func (m *Manager) getVariables(p *structures.Project) ([]string, error) {
 	return variables, nil
 }
 
-func (m *Manager) getInventories(p *structures.Project) ([]string, error) {
+func (m *Manager) projectInventories(p *structures.Project) ([]string, error) {
 	inventoriesDirectory := fmt.Sprintf("%s/inventories", m.projectDirectory(p))
 	exists, err := directoryExists(inventoriesDirectory)
 	if err != nil {
