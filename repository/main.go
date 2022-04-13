@@ -47,6 +47,7 @@ func (m *Manager) UpdateAll() {
 	}
 
 	for _, project := range projects {
+		log.Infof("updating project %s...", project.Id)
 		if err := m.Update(project); err != nil {
 			log.Warnf("unable to update project %s: %s", project.Name, err)
 		}
@@ -54,6 +55,10 @@ func (m *Manager) UpdateAll() {
 }
 
 func (m *Manager) Update(project *structures.Project) error {
+	if m.store.ProjectHasLockedPlaybooks(project.Id) {
+		return errors.New("project has locked playbooks")
+	}
+
 	output := strings.Builder{}
 	success := false
 	revision := "unknown revision"

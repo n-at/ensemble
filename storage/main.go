@@ -479,6 +479,16 @@ func (s *Storage) ProjectDelete(id string) error {
 	return err
 }
 
+func (s *Storage) ProjectHasLockedPlaybooks(id string) bool {
+	query := `
+		select count(1)
+		from playbooks
+		where project_id = $1 and not deleted and locked
+	`
+	row := s.db.QueryRow(query, id)
+	return queryExistsHelper(row)
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //Project User Access
 ///////////////////////////////////////////////////////////////////////////////
