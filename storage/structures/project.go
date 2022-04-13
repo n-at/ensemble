@@ -12,7 +12,10 @@ type Project struct {
 	RepositoryBranch string
 	Inventory        string
 	InventoryList    []string
+	CollectionsList  []string
 	Variables        string
 	VariablesList    []string
+	VariablesMain    bool
+	VariablesVault   bool
 	VaultPassword    string
 }

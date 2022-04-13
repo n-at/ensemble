@@ -249,7 +249,7 @@ func (s *Storage) UserEnsureAdminExists() error {
 
 func scanProject(s Scanner) (*structures.Project, error) {
 	var project structures.Project
-	var inventoryList, variablesList string
+	var inventoryList, collectionsList, variablesList string
 	if err := s.Scan(
 		&project.Id,
 		&project.Name,
@@ -258,8 +258,11 @@ func scanProject(s Scanner) (*structures.Project, error) {
 		&project.RepositoryBranch,
 		&project.Inventory,
 		&inventoryList,
+		&collectionsList,
 		&project.Variables,
 		&variablesList,
+		&project.VariablesMain,
+		&project.VariablesVault,
 		&project.VaultPassword); err != nil {
 		return nil, err
 	}
@@ -290,8 +293,11 @@ func (s *Storage) ProjectGet(id string) (*structures.Project, error) {
                      repo_branch, 
                      inventory, 
                      inventory_list, 
+                     collections_list,
                      variables, 
                      variables_list,
+                     variables_main,
+                     variables_vault,
                      vault_password
               from projects
               where id = $1 and not deleted
@@ -313,8 +319,11 @@ func (s *Storage) ProjectGetAll() ([]*structures.Project, error) {
                      repo_branch, 
                      inventory, 
                      inventory_list, 
+                     collections_list,
                      variables, 
                      variables_list,
+                     variables_main,
+                     variables_vault,
                      vault_password
               from projects
               where not deleted
@@ -347,8 +356,11 @@ func (s *Storage) ProjectGetByUser(userId string) ([]*structures.Project, error)
                      repo_branch, 
                      inventory, 
                      inventory_list, 
+                     collections_list,
                      variables, 
                      variables_list,
+                     variables_main,
+                     variables_vault,
                      vault_password
               from projects 
                 left join projects_users_access on (projects_users_access.project_id = projects.id) 
@@ -394,12 +406,26 @@ func (s *Storage) ProjectInsert(project *structures.Project) error {
 	}
 
 	query := `
-		insert into projects (id, name, description, repo_url, repo_branch, inventory, inventory_list, variables, variables_list, vault_password) 
-		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		insert into projects (id, 
+							  name, 
+							  description, 
+							  repo_url, 
+							  repo_branch, 
+							  inventory, 
+							  inventory_list, 
+							  collections_list,
+							  variables, 
+							  variables_list,
+							  variables_main,
+							  variables_vault,
+							  vault_password
+		                      ) 
+		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 	`
 
 	inventoryList := strings.Join(project.InventoryList, "|")
 	variablesList := strings.Join(project.VariablesList, "|")
+	collectionsList := strings.Join(project.CollectionsList, "|")
 
 	_, err := s.db.Exec(
 		query,
@@ -410,8 +436,11 @@ func (s *Storage) ProjectInsert(project *structures.Project) error {
 		project.RepositoryBranch,
 		project.Inventory,
 		inventoryList,
+		collectionsList,
 		project.Variables,
 		variablesList,
+		project.VariablesMain,
+		project.VariablesVault,
 		project.VaultPassword)
 	return err
 }
@@ -451,12 +480,16 @@ func (s *Storage) ProjectUpdate(project *structures.Project) error {
 			inventory_list = $6,
 			variables = $7,
 			variables_list = $8,
-			vault_password = $9
-		where id = $10
+			vault_password = $9,
+			collections_list = $10,
+			variables_main = $11,
+			variables_vault = $12
+		where id = $13
 	`
 
 	inventoryList := strings.Join(project.InventoryList, "|")
 	variablesList := strings.Join(project.VariablesList, "|")
+	colletionsList := strings.Join(project.CollectionsList, "|")
 
 	_, err = s.db.Exec(
 		query,
@@ -469,6 +502,9 @@ func (s *Storage) ProjectUpdate(project *structures.Project) error {
 		project.Variables,
 		variablesList,
 		project.VaultPassword,
+		colletionsList,
+		project.VariablesMain,
+		project.VariablesVault,
 		project.Id)
 	return err
 }

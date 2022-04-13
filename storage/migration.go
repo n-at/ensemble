@@ -178,6 +178,18 @@ var migrations = []Migration{
 		version: 19,
 		name:    "project_updates.success field",
 		query:   `alter table project_updates add column success boolean`,
+	}, {
+		version: 20,
+		name:    "projects.collections_list field",
+		query:   `alter table projects add column collections_list text`,
+	}, {
+		version: 21,
+		name:    "projects.variables_main field",
+		query:   `alter table projects add column variables_main boolean`,
+	}, {
+		version: 22,
+		name:    "projects.variables_vault field",
+		query:   `alter table projects add column variables_vault boolean`,
 	},
 }
 
