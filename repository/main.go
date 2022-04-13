@@ -7,8 +7,11 @@ import (
 	"fmt"
 	"github.com/alessio/shellescape"
 	log "github.com/sirupsen/logrus"
+	"io/ioutil"
 	"os"
 	"os/exec"
+	"regexp"
+	"sort"
 	"strings"
 	"time"
 )
@@ -64,7 +67,14 @@ func (m *Manager) Update(project *structures.Project) error {
 	revision := "unknown revision"
 
 	defer func() {
-		if err := m.saveProjectUpdate(project, revision, success, output.String()); err != nil {
+		update := structures.ProjectUpdate{
+			ProjectId: project.Id,
+			Date:      time.Now(),
+			Success:   success,
+			Revision:  revision,
+			Log:       output.String(),
+		}
+		if err := m.store.ProjectUpdateInsert(&update); err != nil {
 			log.Errorf("unable to save project update %s: %s", project.Id, err)
 		}
 	}()
@@ -130,6 +140,13 @@ func (m *Manager) Update(project *structures.Project) error {
 	}
 	output.WriteString(fmt.Sprintf("> current revision: %s\n", revision))
 
+	if err := m.updateProjectInfo(project); err != nil {
+		return err
+	}
+	if err := m.updatePlaybooksInfo(project); err != nil {
+		return err
+	}
+
 	success = true
 
 	return nil
@@ -138,7 +155,7 @@ func (m *Manager) Update(project *structures.Project) error {
 ///////////////////////////////////////////////////////////////////////////////
 
 func (m *Manager) projectDirectory(p *structures.Project) string {
-	return fmt.Sprintf("%s%c%s", m.config.Path, os.PathSeparator, p.Id)
+	return fmt.Sprintf("%s/%s", m.config.Path, p.Id)
 }
 
 func (m *Manager) projectDirectoryExists(p *structures.Project) (bool, error) {
@@ -146,7 +163,7 @@ func (m *Manager) projectDirectoryExists(p *structures.Project) (bool, error) {
 }
 
 func (m *Manager) projectRepositoryExists(p *structures.Project) (bool, error) {
-	repoDir := fmt.Sprintf("%s%c%s", m.projectDirectory(p), os.PathSeparator, ".git")
+	repoDir := fmt.Sprintf("%s/.git", m.projectDirectory(p))
 	return directoryExists(repoDir)
 }
 
@@ -202,23 +219,186 @@ func (m *Manager) pull(p *structures.Project) (*result, error) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-func (m *Manager) saveProjectUpdate(p *structures.Project, revision string, success bool, output string) error {
-	update := structures.ProjectUpdate{
-		ProjectId: p.Id,
-		Date:      time.Now(),
-		Success:   success,
-		Revision:  revision,
-		Log:       output,
+func (m *Manager) updateProjectInfo(p *structures.Project) error {
+	projectDirectory := m.projectDirectory(p)
+
+	inventoryMainFileName := fmt.Sprintf("%s/inventories/main.yml", projectDirectory)
+	exists, err := fileExists(inventoryMainFileName)
+	if err != nil {
+		return err
 	}
-	return m.store.ProjectUpdateInsert(&update)
+	if !exists {
+		return errors.New("main inventory file not found")
+	}
+
+	variablesMainFileName := fmt.Sprintf("%s/vars/main.yml", projectDirectory)
+	exists, err = fileExists(variablesMainFileName)
+	if err != nil {
+		return err
+	}
+	p.VariablesMain = exists
+
+	vaultFileName := fmt.Sprintf("%s/vars/vault.yml", projectDirectory)
+	exists, err = fileExists(vaultFileName)
+	if err != nil {
+		return err
+	}
+	p.VariablesVault = exists
+
+	inventories, err := m.getInventories(p)
+	if err != nil {
+		return err
+	}
+	p.InventoryList = inventories
+
+	inventoryFound := false
+	for _, i := range inventories {
+		if i == p.Inventory {
+			inventoryFound = true
+			break
+		}
+	}
+	if !inventoryFound {
+		p.Inventory = "main.yml"
+	}
+
+	variables, err := m.getVariables(p)
+	if err != nil {
+		return err
+	}
+	p.VariablesList = variables
+
+	variablesFound := false
+	for _, v := range variables {
+		if v == p.Variables {
+			variablesFound = true
+			break
+		}
+	}
+	if !variablesFound {
+		p.Variables = ""
+	}
+
+	collections, err := m.getCollections(p)
+	if err != nil {
+		return err
+	}
+	p.CollectionsList = collections
+
+	if err := m.store.ProjectUpdate(p); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Manager) getCollections(p *structures.Project) ([]string, error) {
+	collectionsFile := fmt.Sprintf("%s/collections.txt", m.projectDirectory(p))
+	exists, err := fileExists(collectionsFile)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return []string{}, nil
+	}
+
+	bytes, err := os.ReadFile(collectionsFile)
+	if err != nil {
+		return nil, err
+	}
+	return strings.Split(string(bytes), "\n"), nil
+}
+
+func (m *Manager) getVariables(p *structures.Project) ([]string, error) {
+	variablesDirectory := fmt.Sprintf("%s/vars", m.projectDirectory(p))
+	exists, err := directoryExists(variablesDirectory)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return []string{}, nil
+	}
+
+	pattern, err := regexp.Compile("^.+\\.yml$")
+	if err != nil {
+		return nil, err
+	}
+
+	entries, err := ioutil.ReadDir(variablesDirectory)
+	if err != nil {
+		return nil, err
+	}
+
+	var variables []string
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		name := entry.Name()
+		if pattern.MatchString(name) && name != "main.yml" && name != "vault.yml" {
+			variables = append(variables, name)
+		}
+	}
+
+	sort.Strings(variables)
+
+	return variables, nil
+}
+
+func (m *Manager) getInventories(p *structures.Project) ([]string, error) {
+	inventoriesDirectory := fmt.Sprintf("%s/inventories", m.projectDirectory(p))
+	exists, err := directoryExists(inventoriesDirectory)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, errors.New("inventories directory not found")
+	}
+
+	entries, err := ioutil.ReadDir(inventoriesDirectory)
+	if err != nil {
+		return nil, err
+	}
+
+	var inventories []string
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		inventories = append(inventories, entry.Name())
+	}
+
+	sort.Strings(inventories)
+
+	return inventories, nil
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+func (m *Manager) updatePlaybooksInfo(p *structures.Project) error {
+	//TODO
+	return nil
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 func directoryExists(dir string) (bool, error) {
-	_, err := os.Stat(dir)
+	stat, err := os.Stat(dir)
 	if err == nil {
-		return true, nil
+		return stat.IsDir(), nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
+}
+
+func fileExists(file string) (bool, error) {
+	stat, err := os.Stat(file)
+	if err == nil {
+		return !stat.IsDir(), nil
 	}
 	if os.IsNotExist(err) {
 		return false, nil
