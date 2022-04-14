@@ -92,7 +92,7 @@ func (m *Manager) Update(project *structures.Project) error {
 		if err != nil {
 			return err
 		}
-		output.WriteString(fmt.Sprintf("> git clone\n\n%s\n\n", cloneResult.output))
+		output.WriteString(fmt.Sprintf("> git clone\n\n%s\n", cloneResult.output))
 		if !cloneResult.success {
 			return errors.New("unable to execute git clone")
 		}
@@ -102,7 +102,7 @@ func (m *Manager) Update(project *structures.Project) error {
 	if err != nil {
 		return err
 	}
-	output.WriteString(fmt.Sprintf("> git remote set-url\n\n%s\n\n", originResult.output))
+	output.WriteString(fmt.Sprintf("> git remote set-url\n\n%s\n", originResult.output))
 	if !originResult.success {
 		return errors.New("unable to execute git remote set-url")
 	}
@@ -111,7 +111,7 @@ func (m *Manager) Update(project *structures.Project) error {
 	if err != nil {
 		return err
 	}
-	output.WriteString(fmt.Sprintf("> git reset\n\n%s\n\n", resetResult.output))
+	output.WriteString(fmt.Sprintf("> git reset\n\n%s\n", resetResult.output))
 	if !resetResult.success {
 		return errors.New("unable to execute git reset")
 	}
@@ -120,7 +120,7 @@ func (m *Manager) Update(project *structures.Project) error {
 	if err != nil {
 		return err
 	}
-	output.WriteString(fmt.Sprintf("> git pull\n\n%s\n\n", pullResult.output))
+	output.WriteString(fmt.Sprintf("> git pull\n\n%s\n", pullResult.output))
 	if !pullResult.success {
 		return errors.New("unable to execute git pull")
 	}
@@ -129,7 +129,7 @@ func (m *Manager) Update(project *structures.Project) error {
 	if err != nil {
 		return err
 	}
-	output.WriteString(fmt.Sprintf("> git checkout\n\n%s\n\n", checkoutResult.output))
+	output.WriteString(fmt.Sprintf("> git checkout\n\n%s\n", checkoutResult.output))
 	if !checkoutResult.success {
 		return errors.New("unable to execute git checkout")
 	}
@@ -196,7 +196,11 @@ func (m *Manager) revision(p *structures.Project) (string, error) {
 	if !result.success {
 		return "", errors.New("unable to execute git log")
 	}
-	return result.output[:structures.ProjectUpdateRevisionMaxLength], nil
+
+	if len([]rune(result.output)) > structures.ProjectUpdateRevisionMaxLength {
+		result.output = fmt.Sprintf("%s...", result.output[:structures.ProjectUpdateRevisionMaxLength])
+	}
+	return result.output, nil
 }
 
 func (m *Manager) origin(p *structures.Project) (*result, error) {
@@ -388,8 +392,8 @@ func (m *Manager) updatePlaybooksInfo(p *structures.Project) error {
 		return err
 	}
 
-	var playbooksToDelete map[string]bool
-	var playbooksByFileName map[string]string
+	playbooksToDelete := make(map[string]bool)
+	playbooksByFileName := make(map[string]string)
 	for _, playbook := range playbooks {
 		playbooksToDelete[playbook.Id] = true
 		playbooksByFileName[playbook.Filename] = playbook.Id
@@ -487,6 +491,7 @@ func (m *Manager) playbookInfo(filePath string) (string, string, error) {
 		if line[:1] != "#" {
 			continue
 		}
+		line = line[1:]
 		if len(name) == 0 {
 			name = line
 		} else {

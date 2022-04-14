@@ -113,19 +113,31 @@ func (s *Storage) UserAnyExists() bool {
 }
 
 func (s *Storage) UserExists(id string) bool {
-	query := `select count(1) from users where id = $1 and not deleted`
+	query := `select count(1) 
+	          from users 
+	          where id = $1 
+	            and not coalesce(deleted, false)`
 	row := s.db.QueryRow(query, id)
 	return queryExistsHelper(row)
 }
 
 func (s *Storage) UserExistsByLogin(login string) bool {
-	query := `select count(1) from users where login = $1 and not deleted`
+	query := `select count(1) 
+              from users 
+              where login = $1 
+                and not coalesce(deleted, false)`
 	row := s.db.QueryRow(query, login)
 	return queryExistsHelper(row)
 }
 
 func (s *Storage) UserGet(id string) (*structures.User, error) {
-	query := `select id, login, password, role from users where id = $1 and not deleted`
+	query := `select id, 
+                     login, 
+                     password, 
+                     role 
+              from users 
+              where id = $1 
+                and not coalesce(deleted, false)`
 	row := s.db.QueryRow(query, id)
 	if err := row.Err(); err != nil {
 		return nil, err
@@ -134,12 +146,19 @@ func (s *Storage) UserGet(id string) (*structures.User, error) {
 }
 
 func (s *Storage) UserGetAll() ([]*structures.User, error) {
-	query := `select id, login, password, role from users where not deleted order by login`
+	query := `select id, 
+                     login, 
+                     password, 
+                     role 
+              from users 
+              where not coalesce(deleted, false) 
+              order by login`
 
 	rows, err := s.db.Query(query)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var users []*structures.User
 
@@ -273,20 +292,39 @@ func scanProject(s Scanner) (*structures.Project, error) {
 		return nil, err
 	}
 
-	project.InventoryList = strings.Split(inventoryList, "|")
-	project.VariablesList = strings.Split(variablesList, "|")
+	if len(inventoryList) != 0 {
+		project.InventoryList = strings.Split(inventoryList, "|")
+	} else {
+		project.InventoryList = []string{}
+	}
+	if len(variablesList) != 0 {
+		project.VariablesList = strings.Split(variablesList, "|")
+	} else {
+		project.VariablesList = []string{}
+	}
+	if len(collectionsList) != 0 {
+		project.CollectionsList = strings.Split(collectionsList, "|")
+	} else {
+		project.CollectionsList = []string{}
+	}
 
 	return &project, nil
 }
 
 func (s *Storage) ProjectExists(id string) bool {
-	query := `select count(1) from projects where id = $1 and not deleted`
+	query := `select count(1) 
+              from projects 
+              where id = $1 
+                and not coalesce(deleted, false)`
 	row := s.db.QueryRow(query, id)
 	return queryExistsHelper(row)
 }
 
 func (s *Storage) ProjectExistsByName(name string) bool {
-	query := `select count(1) from projects where name = $1 and not deleted`
+	query := `select count(1) 
+              from projects 
+              where name = $1 
+                and not coalesce(deleted, false)`
 	row := s.db.QueryRow(query, name)
 	return queryExistsHelper(row)
 }
@@ -306,7 +344,8 @@ func (s *Storage) ProjectGet(id string) (*structures.Project, error) {
                      variables_vault,
                      vault_password
               from projects
-              where id = $1 and not deleted`
+              where id = $1 
+                and not coalesce(deleted, false)`
 
 	row := s.db.QueryRow(query, id)
 	if err := row.Err(); err != nil {
@@ -331,13 +370,14 @@ func (s *Storage) ProjectGetAll() ([]*structures.Project, error) {
                      variables_vault,
                      vault_password
               from projects
-              where not deleted
+              where not coalesce(deleted, false)
               order by name`
 
 	rows, err := s.db.Query(query)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var projects []*structures.Project
 	for rows.Next() {
@@ -368,13 +408,15 @@ func (s *Storage) ProjectGetByUser(userId string) ([]*structures.Project, error)
                      vault_password
               from projects 
                 left join projects_users_access on (projects_users_access.project_id = projects.id) 
-              where not deleted and projects_users_access.user_id = $1
+              where not coalesce(deleted, false) 
+                and projects_users_access.user_id = $1
               order by name`
 
 	rows, err := s.db.Query(query, userId)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var projects []*structures.Project
 	for rows.Next() {
@@ -521,8 +563,9 @@ func (s *Storage) ProjectHasLockedPlaybooks(id string) bool {
 	query := `
 		select count(1)
 		from playbooks
-		where project_id = $1 and not deleted and locked
-	`
+		where project_id = $1 
+		  and not coalesce(deleted, false) 
+		  and locked`
 	row := s.db.QueryRow(query, id)
 	return queryExistsHelper(row)
 }
@@ -532,7 +575,10 @@ func (s *Storage) ProjectHasLockedPlaybooks(id string) bool {
 ///////////////////////////////////////////////////////////////////////////////
 
 func (s *Storage) ProjectUserAccessExists(projectId, userId string) bool {
-	query := `select count(1) from projects_users_access where project_id = $1 and user_id = $2`
+	query := `select count(1) 
+              from projects_users_access 
+              where project_id = $1 
+                and user_id = $2`
 	row := s.db.QueryRow(query, projectId, userId)
 	return queryExistsHelper(row)
 }
@@ -576,7 +622,8 @@ func (s *Storage) ProjectUpdateGet(id string) (*structures.ProjectUpdate, error)
                      revision, 
                      log 
               from project_updates 
-              where id = $1 and not deleted`
+              where id = $1 
+                and not coalesce(deleted, false)`
 
 	row := s.db.QueryRow(query, id)
 	if err := row.Err(); err != nil {
@@ -593,13 +640,15 @@ func (s *Storage) ProjectUpdateGetByProject(projectId string) ([]*structures.Pro
                      revision, 
                      log 
               from project_updates 
-              where project_id = $1 and not deleted
+              where project_id = $1 
+                and not coalesce(deleted, false)
 		      order by date desc`
 
 	rows, err := s.db.Query(query, projectId)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var updates []*structures.ProjectUpdate
 
@@ -623,7 +672,8 @@ func (s *Storage) ProjectUpdateGetProjectLatest(projectId string) (*structures.P
                      revision, 
                      log 
               from project_updates 
-              where project_id = $1 and not deleted
+              where project_id = $1 
+                and not coalesce(deleted, false)
 		      order by date desc
 			  limit 1`
 
@@ -674,7 +724,8 @@ func scanPlaybook(s Scanner) (*structures.Playbook, error) {
 func (s *Storage) PlaybookGet(id string) (*structures.Playbook, error) {
 	query := `select id, project_id, filename, name, description, locked 
               from playbooks 
-              where id = $1 and not deleted`
+              where id = $1 
+                and not coalesce(deleted, false)`
 
 	row := s.db.QueryRow(query, id)
 	if err := row.Err(); err != nil {
@@ -687,13 +738,15 @@ func (s *Storage) PlaybookGet(id string) (*structures.Playbook, error) {
 func (s *Storage) PlaybookGetByProject(projectId string) ([]*structures.Playbook, error) {
 	query := `select id, project_id, filename, name, description, locked 
               from playbooks 
-              where project_id = $1 and not deleted
+              where project_id = $1 
+                and not coalesce(deleted, false)
               order by name, filename`
 
 	rows, err := s.db.Query(query, projectId)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var playbooks []*structures.Playbook
 
@@ -807,7 +860,8 @@ func (s *Storage) PlaybookRunGet(id string) (*structures.PlaybookRun, error) {
                      finish_time, 
                      result 
               from playbook_runs 
-              where id = $1 and not deleted`
+              where id = $1 
+                and not coalesce(deleted, false)`
 
 	row := s.db.QueryRow(query, id)
 	if err := row.Err(); err != nil {
@@ -826,7 +880,8 @@ func (s *Storage) PlaybookRunGetLatest(playbookId string) (*structures.PlaybookR
                      finish_time, 
                      result 
               from playbook_runs 
-              where playbook_id = $1 and not deleted
+              where playbook_id = $1 
+                and not coalesce(deleted, false)
               order by start_time desc
               limit 1`
 
@@ -847,13 +902,15 @@ func (s *Storage) PlaybookRunGetByPlaybook(playbookId string) ([]*structures.Pla
                      finish_time, 
                      result 
               from playbook_runs 
-              where playbook_id = $1 and not deleted
+              where playbook_id = $1 
+                and not coalesce(deleted, false)
               order by start_time desc`
 
 	rows, err := s.db.Query(query, playbookId)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var runs []*structures.PlaybookRun
 
@@ -949,7 +1006,12 @@ func (s *Storage) PlaybookRunDelete(id string) error {
 ///////////////////////////////////////////////////////////////////////////////
 
 func (s *Storage) RunResultGet(id string) (*structures.RunResult, error) {
-	query := `select id, run_id, output from run_results where id = $1 and not deleted`
+	query := `select id, 
+                     run_id, 
+                     output 
+              from run_results 
+              where id = $1 
+                and not coalesce(deleted, false)`
 
 	row := s.db.QueryRow(query, id)
 	if err := row.Err(); err != nil {
