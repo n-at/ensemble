@@ -4,9 +4,11 @@ import (
 	"ensemble/repository"
 	"ensemble/storage"
 	"ensemble/web"
+	"github.com/go-co-op/gocron"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
+	"time"
 )
 
 var (
@@ -65,8 +67,25 @@ func main() {
 	}
 
 	manager := repository.New(repositoryConfig, store)
-	manager.UpdateAll() //TODO make schedule
+	scheduleProjectsUpdate(manager)
 
 	server := web.New(webConfig, store, manager)
 	log.Fatal(server.Start(webConfig.Listen))
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+func scheduleProjectsUpdate(m *repository.Manager) {
+	cron := viper.GetString("update")
+	if len(cron) == 0 {
+		cron = "0 * * * *"
+	}
+
+	scheduler := gocron.NewScheduler(time.Now().Location())
+	_, err := scheduler.Cron(cron).Do(func() {
+		m.UpdateAll()
+	})
+	if err != nil {
+		log.Fatalf("unable to start projecs update schedule: %s", err)
+	}
 }

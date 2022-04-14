@@ -1,7 +1,15 @@
+#Server settings
 web:
   #Address to listen
   listen: ":3000"
   debugTemplates: false
 
+#PostgreSQL connection settings
 db:
   url: "postgres://ensemble:ensemble@localhost:5432/ensemble?sslmode=disable"
+
+#Directory to store project repositories
+path: "data"
+
+#Projects update schedule (cron)
+update: "0 * * * *"
