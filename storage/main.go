@@ -175,7 +175,8 @@ func (s *Storage) UserInsert(user *structures.User) error {
 		user.Role = structures.UserRoleOperator
 	}
 
-	query := `insert into users (id, login, password, role) values ($1, $2, $3, $4)`
+	query := `insert into users (id, login, password, role) 
+              values ($1, $2, $3, $4)`
 
 	_, err := s.db.Exec(query, user.Id, user.Login, user.Password, user.Role)
 	return err
@@ -206,7 +207,12 @@ func (s *Storage) UserUpdate(user *structures.User) error {
 		return errors.New("update user new login exists")
 	}
 
-	query := `update users set login = $1, password = $2, role = $3 where id = $4`
+	query := `update users 
+              set login = $1, 
+                  password = $2, 
+                  role = $3, 
+                  deleted = false 
+              where id = $4`
 
 	_, err = s.db.Exec(query, user.Login, user.Password, user.Role, user.Id)
 	return err
@@ -300,8 +306,7 @@ func (s *Storage) ProjectGet(id string) (*structures.Project, error) {
                      variables_vault,
                      vault_password
               from projects
-              where id = $1 and not deleted
-	`
+              where id = $1 and not deleted`
 
 	row := s.db.QueryRow(query, id)
 	if err := row.Err(); err != nil {
@@ -327,8 +332,7 @@ func (s *Storage) ProjectGetAll() ([]*structures.Project, error) {
                      vault_password
               from projects
               where not deleted
-              order by name
-	`
+              order by name`
 
 	rows, err := s.db.Query(query)
 	if err != nil {
@@ -365,8 +369,7 @@ func (s *Storage) ProjectGetByUser(userId string) ([]*structures.Project, error)
               from projects 
                 left join projects_users_access on (projects_users_access.project_id = projects.id) 
               where not deleted and projects_users_access.user_id = $1
-              order by name
-	`
+              order by name`
 
 	rows, err := s.db.Query(query, userId)
 	if err != nil {
@@ -420,8 +423,7 @@ func (s *Storage) ProjectInsert(project *structures.Project) error {
 							  variables_vault,
 							  vault_password
 		                      ) 
-		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-	`
+		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`
 
 	inventoryList := strings.Join(project.InventoryList, "|")
 	variablesList := strings.Join(project.VariablesList, "|")
@@ -483,13 +485,13 @@ func (s *Storage) ProjectUpdate(project *structures.Project) error {
 			vault_password = $9,
 			collections_list = $10,
 			variables_main = $11,
-			variables_vault = $12
-		where id = $13
-	`
+			variables_vault = $12,
+			deleted = false
+		where id = $13`
 
 	inventoryList := strings.Join(project.InventoryList, "|")
 	variablesList := strings.Join(project.VariablesList, "|")
-	colletionsList := strings.Join(project.CollectionsList, "|")
+	collectionsList := strings.Join(project.CollectionsList, "|")
 
 	_, err = s.db.Exec(
 		query,
@@ -502,7 +504,7 @@ func (s *Storage) ProjectUpdate(project *structures.Project) error {
 		project.Variables,
 		variablesList,
 		project.VaultPassword,
-		colletionsList,
+		collectionsList,
 		project.VariablesMain,
 		project.VariablesVault,
 		project.Id)
@@ -644,7 +646,8 @@ func (s *Storage) ProjectUpdateInsert(update *structures.ProjectUpdate) error {
 		update.Id = NewId()
 	}
 
-	query := `insert into project_updates (id, project_id, date, success, revision, log) values ($1, $2, $3, $4, $5, $6)`
+	query := `insert into project_updates (id, project_id, date, success, revision, log) 
+              values ($1, $2, $3, $4, $5, $6)`
 
 	_, err := s.db.Exec(query, update.Id, update.ProjectId, update.Date, update.Success, update.Revision, update.Log)
 	return err
@@ -720,7 +723,8 @@ func (s *Storage) PlaybookInsert(playbook *structures.Playbook) error {
 		playbook.Id = NewId()
 	}
 
-	query := `insert into playbooks (id, project_id, filename, name, description, locked) values ($1, $2, $3, $4, $5, $6)`
+	query := `insert into playbooks (id, project_id, filename, name, description, locked) 
+              values ($1, $2, $3, $4, $5, $6)`
 
 	_, err := s.db.Exec(
 		query,
@@ -758,7 +762,13 @@ func (s *Storage) PlaybookUpdate(playbook *structures.Playbook) error {
 		return errors.New("playbook update cannot change project id")
 	}
 
-	query := `update playbooks set filename=$1, name=$2, description=$3, locked=$4 where id=$5`
+	query := `update playbooks 
+              set filename = $1, 
+                  name = $2, 
+                  description = $3, 
+                  locked = $4, 
+                  deleted = false 
+              where id = $5`
 
 	_, err = s.db.Exec(query, playbook.Filename, playbook.Name, playbook.Description, playbook.Locked, playbook.Id)
 	return err
@@ -916,7 +926,13 @@ func (s *Storage) PlaybookRunUpdate(run *structures.PlaybookRun) error {
 		return errors.New("playbook run update cannot change user id")
 	}
 
-	query := `update playbook_runs set mode = $1, start_time = $2, finish_time = $3, result = $4 where id = $5`
+	query := `update playbook_runs 
+              set mode = $1, 
+                  start_time = $2, 
+                  finish_time = $3, 
+                  result = $4, 
+                  deleted = false 
+              where id = $5`
 
 	_, err = s.db.Exec(query, run.Mode, run.StartTime, run.FinishTime, run.Result, run.Id)
 	return err
@@ -986,7 +1002,10 @@ func (s *Storage) RunResultUpdate(result *structures.RunResult) error {
 		return errors.New("run result update cannot change run id")
 	}
 
-	query := `update run_results set output = $1 where id = $2`
+	query := `update run_results 
+              set output = $1, 
+                  deleted = false 
+              where id = $2`
 
 	_, err = s.db.Exec(query, result.Output, result.Id)
 	return err
