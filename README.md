@@ -33,9 +33,9 @@ Default inventory file is `main.yml`, other files will be treated as alternative
 
 `/vars/` - contains variables:
 
-* `main.yml` - default file, when exist always included in playbook run
+* `main.yml` - default file, when exists always included in playbook run
 * `vault.yml` - file encrypted with [ansible vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html), 
-when exist always included in playbook run (requires vault password in project settings) 
+when exists always included in playbook run (requires vault password in project settings) 
 * other YAML files will be treated as alternatives - can be included after `vault.yml` and `main.yml` to override variables defined there 
 
 It is recommended to add `__vault_password__` file to `.gitignore`.

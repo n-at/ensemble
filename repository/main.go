@@ -378,8 +378,124 @@ func (m *Manager) projectInventories(p *structures.Project) ([]string, error) {
 ///////////////////////////////////////////////////////////////////////////////
 
 func (m *Manager) updatePlaybooksInfo(p *structures.Project) error {
-	//TODO
+	playbooks, err := m.store.PlaybookGetByProject(p.Id)
+	if err != nil {
+		return err
+	}
+
+	currentPlaybooks, err := m.playbooks(p)
+	if err != nil {
+		return err
+	}
+
+	var playbooksToDelete map[string]bool
+	var playbooksByFileName map[string]string
+	for _, playbook := range playbooks {
+		playbooksToDelete[playbook.Id] = true
+		playbooksByFileName[playbook.Filename] = playbook.Id
+	}
+
+	var playbooksToUpdate []*structures.Playbook
+	var playbooksToInsert []*structures.Playbook
+
+	for _, playbook := range currentPlaybooks {
+		id, found := playbooksByFileName[playbook.Filename]
+		if found {
+			playbook.Id = id
+			playbooksToUpdate = append(playbooksToUpdate, playbook)
+			playbooksToDelete[id] = false
+		} else {
+			playbooksToInsert = append(playbooksToInsert, playbook)
+		}
+	}
+
+	for _, playbook := range playbooksToInsert {
+		if err := m.store.PlaybookInsert(playbook); err != nil {
+			log.Errorf("unable to insert playbook %s: %s", playbook.Filename, err)
+		}
+	}
+	for _, playbook := range playbooksToUpdate {
+		if err := m.store.PlaybookUpdate(playbook); err != nil {
+			log.Errorf("unable to update playbook %s: %s", playbook.Id, err)
+		}
+	}
+	for playbookId, toDelete := range playbooksToDelete {
+		if !toDelete {
+			continue
+		}
+		if err := m.store.PlaybookDelete(playbookId); err != nil {
+			log.Errorf("unable to delete playbook %s: %s", playbookId, err)
+		}
+	}
+
 	return nil
+}
+
+func (m *Manager) playbooks(p *structures.Project) ([]*structures.Playbook, error) {
+	pattern, err := regexp.Compile("^.+\\.yml$")
+	if err != nil {
+		return nil, err
+	}
+
+	projectDirectory := m.projectDirectory(p)
+
+	entries, err := ioutil.ReadDir(projectDirectory)
+	if err != nil {
+		return nil, err
+	}
+
+	var playbooks []*structures.Playbook
+
+	for _, entry := range entries {
+		if entry.IsDir() || !pattern.MatchString(entry.Name()) {
+			continue
+		}
+		path := fmt.Sprintf("%s/%s", projectDirectory, entry.Name())
+		name, description, err := m.playbookInfo(path)
+		if err != nil {
+			log.Errorf("unable to read %s: %s", path, err)
+			continue
+		}
+		playbook := structures.Playbook{
+			ProjectId:   p.Id,
+			Filename:    entry.Name(),
+			Name:        name,
+			Description: description,
+			Locked:      false,
+		}
+		playbooks = append(playbooks, &playbook)
+	}
+
+	return playbooks, nil
+}
+
+func (m *Manager) playbookInfo(filePath string) (string, string, error) {
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", "", err
+	}
+
+	name := ""
+	description := strings.Builder{}
+
+	lines := strings.Split(string(content), "\n")
+
+	for _, line := range lines {
+		if line == "---" {
+			break
+		}
+		if line[:1] != "#" {
+			continue
+		}
+		if len(name) == 0 {
+			name = line
+		} else {
+			description.WriteString(line)
+			description.WriteString("\n")
+		}
+	}
+
+	return name, description.String(), nil
 }
 
 ///////////////////////////////////////////////////////////////////////////////
