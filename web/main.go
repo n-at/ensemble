@@ -2,6 +2,7 @@ package web
 
 import (
 	"ensemble/repository"
+	"ensemble/runner"
 	"ensemble/storage"
 	"github.com/flosch/pongo2/v4"
 	"github.com/labstack/echo/v4"
@@ -19,6 +20,7 @@ type Server struct {
 	e       *echo.Echo
 	store   *storage.Storage
 	manager *repository.Manager
+	runner  *runner.Runner
 }
 
 type EnsembleContext struct {
@@ -28,7 +30,7 @@ type EnsembleContext struct {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-func New(configuration Configuration, store *storage.Storage, manager *repository.Manager) *Server {
+func New(configuration Configuration, store *storage.Storage, manager *repository.Manager, runner *runner.Runner) *Server {
 	e := echo.New()
 
 	e.HideBanner = true
@@ -40,6 +42,7 @@ func New(configuration Configuration, store *storage.Storage, manager *repositor
 		e:       e,
 		store:   store,
 		manager: manager,
+		runner:  runner,
 	}
 
 	server.e.Use(server.contextCustomizationHandler)

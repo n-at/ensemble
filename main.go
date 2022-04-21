@@ -2,6 +2,7 @@ package main
 
 import (
 	"ensemble/repository"
+	"ensemble/runner"
 	"ensemble/storage"
 	"ensemble/web"
 	"github.com/go-co-op/gocron"
@@ -15,6 +16,7 @@ var (
 	webConfig        web.Configuration
 	storageConfig    storage.Configuration
 	repositoryConfig repository.Configuration
+	runnerConfig     runner.Configuration
 )
 
 func init() {
@@ -53,23 +55,28 @@ func init() {
 	repositoryConfig = repository.Configuration{
 		Path: path,
 	}
+	runnerConfig = runner.Configuration{
+		Path: path,
+	}
 }
 
 func main() {
-	store, err := storage.New(storageConfig)
+	s, err := storage.New(storageConfig)
 	if err != nil {
 		log.Fatalf("unable to create storage: %s", err)
 	}
-	defer store.Close()
+	defer s.Close()
 
-	if err := store.UserEnsureAdminExists(); err != nil {
+	if err := s.UserEnsureAdminExists(); err != nil {
 		log.Fatalf("unable to create admin: %s", err)
 	}
 
-	manager := repository.New(repositoryConfig, store)
-	scheduleProjectsUpdate(manager)
+	m := repository.New(repositoryConfig, s)
+	scheduleProjectsUpdate(m)
 
-	server := web.New(webConfig, store, manager)
+	r := runner.New(runnerConfig, s)
+
+	server := web.New(webConfig, s, m, r)
 	log.Fatal(server.Start(webConfig.Listen))
 }
 
@@ -78,7 +85,7 @@ func main() {
 func scheduleProjectsUpdate(m *repository.Manager) {
 	cron := viper.GetString("update")
 	if len(cron) == 0 {
-		cron = "0 * * * *"
+		cron = "0 3 * * *"
 	}
 
 	scheduler := gocron.NewScheduler(time.Now().Location())
