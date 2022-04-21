@@ -4,11 +4,16 @@ import (
 	"ensemble/repository"
 	"ensemble/runner"
 	"ensemble/storage"
+	"ensemble/storage/structures"
 	"github.com/flosch/pongo2/v4"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
+)
+
+const (
+	SessionCookieName = "ensemble-session-id"
 )
 
 type Configuration struct {
@@ -25,7 +30,9 @@ type Server struct {
 
 type EnsembleContext struct {
 	echo.Context
-	server *Server
+	server  *Server
+	session *structures.Session
+	user    *structures.User
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -61,7 +68,29 @@ func (s *Server) Start(listen string) error {
 
 func (s *Server) contextCustomizationHandler(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ensembleContext := &EnsembleContext{c, s}
+		var user *structures.User
+		var session *structures.Session
+
+		cookie, err := c.Cookie(SessionCookieName)
+		if err == nil {
+			session, err = s.store.SessionGet(cookie.Value)
+			if err == nil {
+				user, err = s.store.UserGet(session.UserId)
+				if err != nil {
+					log.Warnf("unable to get user by session userId: %s", err)
+					user = nil
+				}
+			} else {
+				log.Warnf("unable to get session by sessionId: %s", err)
+			}
+		}
+
+		ensembleContext := &EnsembleContext{
+			Context: c,
+			server:  s,
+			session: session,
+			user:    user,
+		}
 		return next(ensembleContext)
 	}
 }
@@ -86,7 +115,7 @@ func httpErrorHandler(e error, c echo.Context) {
 ///////////////////////////////////////////////////////////////////////////////
 
 func (c *EnsembleContext) GetSessionId() string {
-	cookie, err := c.Cookie("ensemble-session-id")
+	cookie, err := c.Cookie(SessionCookieName)
 	if err != nil {
 		return ""
 	}
@@ -95,16 +124,16 @@ func (c *EnsembleContext) GetSessionId() string {
 
 func (c *EnsembleContext) SetSessionId(id string) {
 	cookie := &http.Cookie{
-		Name:    "ensemble-session-id",
+		Name:    SessionCookieName,
 		Value:   id,
-		Expires: time.Now().Add(-24 * time.Hour),
+		Expires: time.Now().Add(24 * time.Hour),
 	}
 	c.SetCookie(cookie)
 }
 
 func (c *EnsembleContext) DeleteSessionId() {
 	cookie := &http.Cookie{
-		Name:    "ensemble-session-id",
+		Name:    SessionCookieName,
 		Value:   "",
 		Expires: time.Now().Add(-24 * time.Hour),
 	}
