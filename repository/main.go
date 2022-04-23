@@ -184,7 +184,7 @@ func (m *Manager) ensureProjectDirectoryExists(p *structures.Project) error {
 ///////////////////////////////////////////////////////////////////////////////
 
 func (m *Manager) clone(p *structures.Project) (*result, error) {
-	command := fmt.Sprintf("git clone --branch %s %s .", shellescape.Quote(p.RepositoryBranch), shellescape.Quote(p.RepositoryUrl))
+	command := fmt.Sprintf("git clone --branch %s %s .", shellescape.Quote(p.RepositoryBranch), shellescape.Quote(p.RepositoryUrlFull()))
 	return m.executeCommand(command, m.projectDirectory(p))
 }
 
@@ -204,7 +204,7 @@ func (m *Manager) revision(p *structures.Project) (string, error) {
 }
 
 func (m *Manager) origin(p *structures.Project) (*result, error) {
-	command := fmt.Sprintf("git remote set-url origin %s", shellescape.Quote(p.RepositoryUrl))
+	command := fmt.Sprintf("git remote set-url origin %s", shellescape.Quote(p.RepositoryUrlFull()))
 	return m.executeCommand(command, m.projectDirectory(p))
 }
 

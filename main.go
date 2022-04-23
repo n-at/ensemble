@@ -45,7 +45,6 @@ func init() {
 	if err := viper.UnmarshalKey("db", &storageConfig); err != nil {
 		log.Fatalf("unable to read db configuration: %s", err)
 	}
-	log.Infof("db: %v", storageConfig)
 
 	path := viper.GetString("path")
 	if len(path) == 0 {

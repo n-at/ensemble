@@ -273,39 +273,57 @@ func (s *Storage) UserEnsureAdminExists() error {
 ///////////////////////////////////////////////////////////////////////////////
 
 func scanProject(s Scanner) (*structures.Project, error) {
-	var project structures.Project
-	var inventoryList, collectionsList, variablesList string
+	var id, name, description, inventory, variables, vaultPassword sql.NullString
+	var repositoryUrl, repositoryLogin, repositoryPassword, repositoryBranch sql.NullString
+	var inventories, collections, variablesAvailable sql.NullString
+	var variablesMain, variablesVault sql.NullBool
 	if err := s.Scan(
-		&project.Id,
-		&project.Name,
-		&project.Description,
-		&project.RepositoryUrl,
-		&project.RepositoryBranch,
-		&project.Inventory,
-		&inventoryList,
-		&collectionsList,
-		&project.Variables,
-		&variablesList,
-		&project.VariablesMain,
-		&project.VariablesVault,
-		&project.VaultPassword); err != nil {
+		&id,
+		&name,
+		&description,
+		&repositoryUrl,
+		&repositoryLogin,
+		&repositoryPassword,
+		&repositoryBranch,
+		&inventory,
+		&inventories,
+		&collections,
+		&variables,
+		&variablesAvailable,
+		&variablesMain,
+		&variablesVault,
+		&vaultPassword); err != nil {
 		return nil, err
 	}
 
-	if len(inventoryList) != 0 {
-		project.InventoryList = strings.Split(inventoryList, "|")
-	} else {
-		project.InventoryList = []string{}
+	var inventoryList, collectionsList, variablesList []string
+
+	if len(inventories.String) != 0 {
+		inventoryList = strings.Split(inventories.String, "|")
 	}
-	if len(variablesList) != 0 {
-		project.VariablesList = strings.Split(variablesList, "|")
-	} else {
-		project.VariablesList = []string{}
+	if len(variablesAvailable.String) != 0 {
+		variablesList = strings.Split(variablesAvailable.String, "|")
 	}
-	if len(collectionsList) != 0 {
-		project.CollectionsList = strings.Split(collectionsList, "|")
-	} else {
-		project.CollectionsList = []string{}
+	if len(collections.String) != 0 {
+		collectionsList = strings.Split(collections.String, "|")
+	}
+
+	project := structures.Project{
+		Id:                 id.String,
+		Name:               name.String,
+		Description:        description.String,
+		RepositoryUrl:      repositoryUrl.String,
+		RepositoryLogin:    repositoryLogin.String,
+		RepositoryPassword: repositoryPassword.String,
+		RepositoryBranch:   repositoryBranch.String,
+		Inventory:          inventory.String,
+		InventoryList:      inventoryList,
+		CollectionsList:    collectionsList,
+		Variables:          variables.String,
+		VariablesList:      variablesList,
+		VariablesMain:      variablesMain.Bool,
+		VariablesVault:     variablesVault.Bool,
+		VaultPassword:      vaultPassword.String,
 	}
 
 	return &project, nil
@@ -334,6 +352,8 @@ func (s *Storage) ProjectGet(id string) (*structures.Project, error) {
                      name, 
                      description, 
                      repo_url, 
+                     repo_login,
+                     repo_password,
                      repo_branch, 
                      inventory, 
                      inventory_list, 
@@ -360,6 +380,8 @@ func (s *Storage) ProjectGetAll() ([]*structures.Project, error) {
                      name, 
                      description, 
                      repo_url, 
+                     repo_login,
+                     repo_password,
                      repo_branch, 
                      inventory, 
                      inventory_list, 
@@ -397,6 +419,8 @@ func (s *Storage) ProjectGetByUser(userId string) ([]*structures.Project, error)
                      name, 
                      description, 
                      repo_url, 
+                     repo_login,
+                     repo_password,
                      repo_branch, 
                      inventory, 
                      inventory_list, 
@@ -455,6 +479,8 @@ func (s *Storage) ProjectInsert(project *structures.Project) error {
 							  name, 
 							  description, 
 							  repo_url, 
+		                      repo_login,
+		                      repo_password,
 							  repo_branch, 
 							  inventory, 
 							  inventory_list, 
@@ -465,7 +491,7 @@ func (s *Storage) ProjectInsert(project *structures.Project) error {
 							  variables_vault,
 							  vault_password
 		                      ) 
-		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`
+		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`
 
 	inventoryList := strings.Join(project.InventoryList, "|")
 	variablesList := strings.Join(project.VariablesList, "|")
@@ -477,6 +503,8 @@ func (s *Storage) ProjectInsert(project *structures.Project) error {
 		project.Name,
 		project.Description,
 		project.RepositoryUrl,
+		project.RepositoryLogin,
+		project.RepositoryPassword,
 		project.RepositoryBranch,
 		project.Inventory,
 		inventoryList,
@@ -519,17 +547,19 @@ func (s *Storage) ProjectUpdate(project *structures.Project) error {
 			name = $1, 
 			description = $2, 
 			repo_url = $3, 
-			repo_branch = $4,
-			inventory = $5,
-			inventory_list = $6,
-			variables = $7,
-			variables_list = $8,
-			vault_password = $9,
-			collections_list = $10,
-			variables_main = $11,
-			variables_vault = $12,
+			repo_login = $4,
+			repo_password = $5,
+			repo_branch = $6,
+			inventory = $7,
+			inventory_list = $8,
+			variables = $9,
+			variables_list = $10,
+			vault_password = $11,
+			collections_list = $12,
+			variables_main = $13,
+			variables_vault = $14,
 			deleted = false
-		where id = $13`
+		where id = $15`
 
 	inventoryList := strings.Join(project.InventoryList, "|")
 	variablesList := strings.Join(project.VariablesList, "|")
@@ -540,6 +570,8 @@ func (s *Storage) ProjectUpdate(project *structures.Project) error {
 		project.Name,
 		project.Description,
 		project.RepositoryUrl,
+		project.RepositoryLogin,
+		project.RepositoryPassword,
 		project.RepositoryBranch,
 		project.Inventory,
 		inventoryList,

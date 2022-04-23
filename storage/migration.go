@@ -190,6 +190,14 @@ var migrations = []Migration{
 		version: 22,
 		name:    "projects.variables_vault field",
 		query:   `alter table projects add column variables_vault boolean`,
+	}, {
+		version: 23,
+		name:    "projects.repo_login field",
+		query:   `alter table projects add column repo_login varchar(500)`,
+	}, {
+		version: 24,
+		name:    "projects.repo_password field",
+		query:   `alter table projects add column repo_password varchar(500)`,
 	},
 }
 
