@@ -25,7 +25,7 @@ type Project struct {
 }
 
 func (p *Project) RepositoryUrlFull() string {
-	u, err := url.ParseRequestURI(p.RepositoryUrl)
+	u, err := url.Parse(p.RepositoryUrl)
 	if err != nil {
 		return p.RepositoryUrl
 	}
