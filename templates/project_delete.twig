@@ -1,0 +1,18 @@
+{% extends "includes/layout.twig" %}
+
+{% block title %}
+    Delete project - ensemble
+{% endblock %}
+
+{% block content %}
+
+    <h1>Delete project</h1>
+
+    <form method="post" action="/projects/delete/{{project.Id}}" enctype="application/x-www-form-urlencoded">
+        <p class="lead">
+            Confirm deletion of project &quot;{{project.Name}}&quot;
+        </p>
+        <button type="submit" class="btn btn-danger">Delete project</button>
+    </form>
+
+{% endblock %}

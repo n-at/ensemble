@@ -211,12 +211,34 @@ func (s *Server) projectEditSubmit(c echo.Context) error {
 	return c.Redirect(http.StatusFound, "/projects/")
 }
 
+//projectDeleteForm Project delete form
 func (s *Server) projectDeleteForm(c echo.Context) error {
-	return nil //TODO
+	project, err := s.getProjectToWrite(c)
+	if err != nil {
+		return err
+	}
+
+	context := c.(*EnsembleContext)
+
+	return c.Render(http.StatusOK, "templates/project_delete.twig", pongo2.Context{
+		"user":    context.user,
+		"project": project,
+	})
 }
 
+//projectDeleteSubmit Delete selected project
 func (s *Server) projectDeleteSubmit(c echo.Context) error {
-	return nil //TODO
+	project, err := s.getProjectToWrite(c)
+	if err != nil {
+		return err
+	}
+
+	err = s.store.ProjectDelete(project.Id)
+	if err != nil {
+		return err
+	}
+
+	return c.Redirect(http.StatusFound, "/projects/")
 }
 
 //projectUpdate Update project repository
