@@ -20,6 +20,10 @@ func (u *User) CanCreateProjects() bool {
 	return u.Role == UserRoleAdmin
 }
 
+func (u *User) CanEditProjects() bool {
+	return u.Role == UserRoleAdmin
+}
+
 func (u *User) CanControlUsers() bool {
 	return u.Role == UserRoleAdmin
 }

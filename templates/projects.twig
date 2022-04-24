@@ -15,7 +15,64 @@
     {% endif %}
 
     {% if projects %}
-        TODO
+        <ul class="list-group mb-3">
+            {% for projectInfo in projects %}
+                {% set project = projectInfo.Project %}
+                {% set update = projectInfo.Update %}
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col-10">
+                            <div>
+                                <p class="lead">{{project.Name}}</p>
+                                {% if project.Description %}
+                                    <div>{{project.Description}}</div>
+                                {% endif %}
+                            </div>
+                            {% if update %}
+                                <div class="mt-3">
+                                    {% if update.Success %}
+                                        <i class="text-success bi bi-check"></i>
+                                    {% else %}
+                                        <i class="text-danger bi bi-x"></i>
+                                    {% endif %}
+                                    {{update.Date.Format("02.01.2006 15:04:05")}}
+                                    -
+                                    {{update.Revision}}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-2 text-end text-nowrap">
+                            <a href="/projects/playbooks/{{project.Id}}" class="btn btn-sm btn-outline-primary">Playbooks</a>
+                            <div class="d-inline-block dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                        type="button"
+                                        id="project-menu-{{project.Id}}"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                    <i class="bi bi-three-dots"></i>
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="project-menu-{{project.Id}}">
+                                    <li>
+                                        <a class="dropdown-item" href="/projects/update/{{project.Id}}">Update repository</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/projects/updates/{{project.Id}}">Updates</a>
+                                    </li>
+                                    {% if user.CanEditProjects() %}
+                                        <li>
+                                            <a class="dropdown-item" href="/projects/edit/{{project.Id}}">Edit</a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="/projects/delete/{{project.Id}}">Delete</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
     {% else %}
         {% include "includes/empty_state.twig" with icon="bi bi-file-earmark" text="No projects found" %}
     {% endif %}
