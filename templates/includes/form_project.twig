@@ -52,7 +52,7 @@
         <label for="variables" class="form-label">Additional variables</label>
         <select id="variables" name="variables" class="form-select">
             <option value="" {% if project.Variables == "" %}selected{% endif %}>None</option>
-            {% for variables in project.variablesList %}
+            {% for variables in project.VariablesList %}
                 <option value="{{variables}}" {% if variables == project.Variables %}selected{% endif %}>{{variables}}</option>
             {% endfor %}
         </select>

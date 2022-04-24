@@ -103,12 +103,94 @@ func (s *Server) projectNewSubmit(c echo.Context) error {
 	return c.Redirect(http.StatusFound, "/projects/")
 }
 
+//projectEditForm Project edit form
 func (s *Server) projectEditForm(c echo.Context) error {
-	return nil //TODO
+	project, err := s.getProjectToWrite(c)
+	if err != nil {
+		return err
+	}
+
+	context := c.(*EnsembleContext)
+
+	return c.Render(http.StatusOK, "templates/project_edit.twig", pongo2.Context{
+		"user":    context.user,
+		"project": project,
+	})
 }
 
+//projectEditSubmit Save changed project data
 func (s *Server) projectEditSubmit(c echo.Context) error {
-	return nil //TODO
+	project, err := s.getProjectToWrite(c)
+	if err != nil {
+		return err
+	}
+
+	context := c.(*EnsembleContext)
+
+	project.Name = c.FormValue("name")
+	project.Description = c.FormValue("description")
+	project.RepositoryUrl = c.FormValue("repo_url")
+	project.RepositoryLogin = c.FormValue("repo_login")
+	project.RepositoryPassword = c.FormValue("repo_password")
+	project.RepositoryBranch = c.FormValue("repo_branch")
+	project.Inventory = c.FormValue("inventory")
+	project.Variables = c.FormValue("variables")
+	project.VaultPassword = c.FormValue("vault_password")
+
+	if len(project.Name) == 0 {
+		err = errors.New("project name should not be empty")
+	}
+	if len(project.RepositoryUrl) == 0 {
+		err = errors.New("repository URL should not be empty")
+	}
+	if len(project.RepositoryBranch) == 0 {
+		project.RepositoryBranch = structures.ProjectDefaultBranchName
+	}
+	if len(project.Inventory) == 0 {
+		project.Inventory = structures.ProjectDefaultInventoryName
+	}
+
+	inventoryFound := false
+	for _, inventory := range project.InventoryList {
+		if inventory == project.Inventory {
+			inventoryFound = true
+			break
+		}
+	}
+	if !inventoryFound {
+		err = errors.New("selected inventory not found")
+	}
+
+	variablesFound := false
+	for _, variables := range project.VariablesList {
+		if variables == project.Variables {
+			variablesFound = true
+			break
+		}
+	}
+	if len(project.Variables) != 0 && !variablesFound {
+		err = errors.New("selected variables not found")
+	}
+
+	if err != nil {
+		return c.Render(http.StatusOK, "templates/project_edit.twig", pongo2.Context{
+			"user":    context.user,
+			"project": project,
+			"error":   err,
+		})
+	}
+
+	err = s.store.ProjectUpdate(project)
+	if err != nil {
+		log.Warnf("projectEditSubmit unable to update project: %s", err)
+		return c.Render(http.StatusOK, "templates/project_edit.twig", pongo2.Context{
+			"user":    context.user,
+			"project": project,
+			"error":   err,
+		})
+	}
+
+	return c.Redirect(http.StatusFound, "/projects/")
 }
 
 func (s *Server) projectDeleteForm(c echo.Context) error {

@@ -3,7 +3,8 @@ package structures
 import "net/url"
 
 const (
-	ProjectDefaultBranchName = "master"
+	ProjectDefaultBranchName    = "master"
+	ProjectDefaultInventoryName = "main.yml"
 )
 
 type Project struct {
