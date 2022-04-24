@@ -1,0 +1,13 @@
+{% extends "includes/layout.twig" %}
+
+{% block title %}
+    New project - ensemble
+{% endblock %}
+
+{% block content %}
+    <h1>New project</h1>
+
+    <form method="post" action="/projects/new" enctype="application/x-www-form-urlencoded">
+        {% include "includes/form_project.twig" %}
+    </form>
+{% endblock %}

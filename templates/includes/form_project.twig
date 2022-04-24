@@ -1,0 +1,70 @@
+<input type="hidden" name="id" value="{{project.Id}}">
+
+{% if error %}
+    <div class="alert alert-danger">
+        {{ error.Error() }}
+    </div>
+{% endif %}
+
+<fieldset>
+    <legend>General</legend>
+    <div class="mb-3">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" id="name" name="name" class="form-control" value="{{project.Name}}" required>
+    </div>
+    <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea id="description" name="description" class="form-control">{{project.Description}}</textarea>
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>Git Repository</legend>
+    <div class="mb-3">
+        <label for="repo_url" class="form-label">URL</label>
+        <input type="text" id="repo_url" name="repo_url" class="form-control" value="{{project.RepositoryUrl}}" required>
+    </div>
+    <div class="mb-3">
+        <label for="repo_login" class="form-label">Login</label>
+        <input type="text" id="repo_login" name="repo_login" class="form-control" value="{{project.RepositoryLogin}}">
+    </div>
+    <div class="mb-3">
+        <label for="repo_password" class="form-label">Password</label>
+        <input type="password" id="repo_password" name="repo_password" class="form-control" value="{{project.RepositoryPassword}}">
+    </div>
+    <div class="mb-3">
+        <label for="repo_branch" class="form-label">Branch</label>
+        <input type="text" id="repo_branch" name="repo_branch" class="form-control" value="{{project.RepositoryBranch}}">
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>Settings</legend>
+    <div class="mb-3">
+        <label for="inventory" class="form-label">Inventory</label>
+        <select id="inventory" name="inventory" class="form-select">
+            {% for inventory in project.InventoryList %}
+                <option value="{{inventory}}" {% if inventory == project.Inventory %}selected{% endif %}>{{inventory}}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="variables" class="form-label">Additional variables</label>
+        <select id="variables" name="variables" class="form-select">
+            <option value="" {% if project.Variables == "" %}selected{% endif %}>None</option>
+            {% for variables in project.variablesList %}
+                <option value="{{variables}}" {% if variables == project.Variables %}selected{% endif %}>{{variables}}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="vault_password" class="form-label">Vault password</label>
+        <input type="password" id="vault_password" name="vault_password" class="form-control" value="{{project.VaultPassword}}">
+    </div>
+</fieldset>
+
+<hr>
+
+<div class="mb-3 text-end">
+    <button type="submit" class="btn btn-primary">Save project</button>
+</div>

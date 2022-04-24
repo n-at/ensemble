@@ -2,6 +2,7 @@ package web
 
 import (
 	"ensemble/storage/structures"
+	"errors"
 	"github.com/flosch/pongo2/v4"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
@@ -15,6 +16,7 @@ type projectInfo struct {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+//projects List of current user projects
 func (s *Server) projects(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
@@ -36,7 +38,7 @@ func (s *Server) projects(c echo.Context) error {
 
 	var projectsWithInfo []*projectInfo
 	for _, project := range projects {
-		update, err := context.server.store.ProjectUpdateGetProjectLatest(project.Id)
+		update, err := s.store.ProjectUpdateGetProjectLatest(project.Id)
 		if err != nil {
 			log.Warnf("unable to get latest project update %s: %s", project.Id, err)
 			update = nil
@@ -53,12 +55,61 @@ func (s *Server) projects(c echo.Context) error {
 	})
 }
 
+//projectNewForm Form for new project creation
 func (s *Server) projectNewForm(c echo.Context) error {
-	return nil //TODO
+	context := c.(*EnsembleContext)
+
+	if !context.user.CanCreateProjects() {
+		return c.Render(http.StatusOK, "templates/error.twig", pongo2.Context{
+			"user":  context.user,
+			"error": errors.New("cannot create new project"),
+		})
+	}
+
+	return c.Render(http.StatusOK, "templates/project_new.twig", pongo2.Context{
+		"user": context.user,
+	})
 }
 
+//projectNewSubmit Save and update new project
 func (s *Server) projectNewSubmit(c echo.Context) error {
-	return nil //TODO
+	context := c.(*EnsembleContext)
+
+	if !context.user.CanCreateProjects() {
+		return c.Render(http.StatusOK, "templates/error.twig", pongo2.Context{
+			"user":  context.user,
+			"error": errors.New("cannot create new project"),
+		})
+	}
+
+	project := &structures.Project{
+		Name:               c.FormValue("name"),
+		Description:        c.FormValue("description"),
+		RepositoryUrl:      c.FormValue("repo_url"),
+		RepositoryLogin:    c.FormValue("repo_login"),
+		RepositoryPassword: c.FormValue("repo_password"),
+		RepositoryBranch:   c.FormValue("repo_branch"),
+		Inventory:          c.FormValue("inventory"),
+		Variables:          c.FormValue("variables"),
+		VaultPassword:      c.FormValue("vault_password"),
+	}
+
+	err := s.store.ProjectInsert(project)
+	if err != nil {
+		log.Warnf("projectNewSubmit unable to save project: %s", err)
+		return c.Render(http.StatusOK, "templates/project_new.twig", pongo2.Context{
+			"user":    context.user,
+			"project": project,
+			"error":   err,
+		})
+	}
+
+	err = s.manager.Update(project)
+	if err != nil {
+		log.Warnf("projectNewSubmit unable to update project: %s", err)
+	}
+
+	return c.Redirect(http.StatusFound, "/projects/")
 }
 
 func (s *Server) projectEditForm(c echo.Context) error {
