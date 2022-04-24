@@ -11,3 +11,15 @@ type User struct {
 	Password string
 	Role     int
 }
+
+func (u *User) CanViewAllProjects() bool {
+	return u.Role == UserRoleAdmin
+}
+
+func (u *User) CanCreateProjects() bool {
+	return u.Role == UserRoleAdmin
+}
+
+func (u *User) CanControlUsers() bool {
+	return u.Role == UserRoleAdmin
+}

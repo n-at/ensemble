@@ -1,0 +1,23 @@
+{% extends "includes/layout.twig" %}
+
+{% block title %}
+    Projects - ensemble
+{% endblock %}
+
+{% block content %}
+
+    {% if user.CanCreateProjects() %}
+        <div class="mb-3">
+            <a href="/projects/new" class="btn btn-success">
+                <i class="bi bi-plus"></i> New project
+            </a>
+        </div>
+    {% endif %}
+
+    {% if projects %}
+        TODO
+    {% else %}
+        {% include "includes/empty_state.twig" with icon="bi bi-file-earmark" text="No projects found" %}
+    {% endif %}
+
+{% endblock %}

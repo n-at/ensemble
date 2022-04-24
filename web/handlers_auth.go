@@ -15,14 +15,11 @@ func (s *Server) index(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
 	if context.user != nil {
-		return c.Redirect(http.StatusFound, "/projects")
+		return c.Redirect(http.StatusFound, "/projects/")
 	} else {
 		return c.Redirect(http.StatusFound, "/login")
 	}
 }
-
-///////////////////////////////////////////////////////////////////////////////
-//authentication
 
 func (s *Server) loginForm(c echo.Context) error {
 	context := c.(*EnsembleContext)

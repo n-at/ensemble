@@ -1,5 +1,28 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
     <div class="container-fluid">
+
         <a class="navbar-brand" href="/">ensemble</a>
+
+        {% if user %}
+            <div class="collapse navbar-collapse" id="navbar-collapse">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/projects/">Projects</a>
+                    </li>
+                    {% if user.CanControlUsers() %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/users/">Users</a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">Logout</a>
+                    </li>
+                </ul>
+                <div class="navbar-text">
+                    {{user.Login}}
+                </div>
+            </div>
+        {% endif %}
+
     </div>
 </nav>

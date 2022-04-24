@@ -45,23 +45,35 @@ func New(configuration Configuration, store *storage.Storage, manager *repositor
 	e.HTTPErrorHandler = httpErrorHandler
 	e.Static("/assets", "assets")
 
-	server := &Server{
+	s := &Server{
 		e:       e,
 		store:   store,
 		manager: manager,
 		runner:  runner,
 	}
 
-	server.e.Use(server.contextCustomizationHandler)
+	s.e.Use(s.contextCustomizationHandler)
 
-	server.e.GET("/", server.index)
+	s.e.GET("/", s.index)
 
 	//authentication
-	server.e.GET("/login", server.loginForm)
-	server.e.POST("/login", server.loginSubmit)
-	server.e.GET("/logout", server.logout)
+	s.e.GET("/login", s.loginForm)
+	s.e.POST("/login", s.loginSubmit)
+	s.e.GET("/logout", s.logout)
 
-	return server
+	//projects
+	projectsGroup := s.e.Group("/projects")
+	projectsGroup.Use(s.authenticationRequiredHandler)
+	projectsGroup.GET("/", s.projects)
+	projectsGroup.GET("/new", s.projectNewForm)
+	projectsGroup.POST("/new", s.projectNewSubmit)
+	projectsGroup.GET("/edit/:project_id", s.projectEditForm)
+	projectsGroup.POST("/edit/:project_id", s.projectEditSubmit)
+	projectsGroup.GET("/delete/:project_id", s.projectDeleteForm)
+	projectsGroup.POST("/delete/:project_id", s.projectDeleteSubmit)
+	projectsGroup.GET("/update/:project_id", s.projectUpdate)
+
+	return s
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -96,6 +108,16 @@ func (s *Server) contextCustomizationHandler(next echo.HandlerFunc) echo.Handler
 			user:    user,
 		}
 		return next(ensembleContext)
+	}
+}
+
+func (s *Server) authenticationRequiredHandler(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		context := c.(*EnsembleContext)
+		if context.user == nil {
+			return c.Redirect(http.StatusFound, "/login")
+		}
+		return next(c)
 	}
 }
 
