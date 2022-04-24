@@ -21,7 +21,7 @@
                 {% set update = projectInfo.Update %}
                 <li class="list-group-item">
                     <div class="row">
-                        <div class="col-10">
+                        <div class="col-lg-10 col-md-9">
                             <div>
                                 <p class="lead">{{project.Name}}</p>
                                 {% if project.Description %}
@@ -52,7 +52,7 @@
                                 {% endif %}
                             </div>
                         </div>
-                        <div class="col-2 text-end text-nowrap">
+                        <div class="col-lg-2 col-md-3 mt-3 mt-md-0 text-end text-nowrap">
                             <a href="/projects/playbooks/{{project.Id}}" class="btn btn-sm btn-outline-primary">Playbooks</a>
                             <div class="d-inline-block dropdown">
                                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
