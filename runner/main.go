@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"bytes"
 	"ensemble/storage"
 	"ensemble/storage/structures"
 	"fmt"
@@ -72,7 +73,7 @@ func (r *Runner) Run(project *structures.Project, playbook *structures.Playbook,
 			}
 		}()
 
-		result, err := r.executePlaybook(project, playbook, mode)
+		stdout, stderr, err := r.executePlaybook(project, playbook, mode)
 		if err != nil {
 			log.Warnf("playbook run %s failed: %s", run.Id, err)
 			run.Result = structures.PlaybookRunResultFailure
@@ -89,7 +90,8 @@ func (r *Runner) Run(project *structures.Project, playbook *structures.Playbook,
 		runResult := structures.RunResult{
 			Id:     run.Id,
 			RunId:  run.Id,
-			Output: result,
+			Output: stdout,
+			Error:  stderr,
 		}
 		if err := r.store.RunResultInsert(&runResult); err != nil {
 			log.Warnf("playbook run result %s insert failed: %s", runResult.Id, err)
@@ -107,7 +109,7 @@ func (r *Runner) installCollection(name string) error {
 	return cmd.Run()
 }
 
-func (r *Runner) executePlaybook(project *structures.Project, playbook *structures.Playbook, mode int) (string, error) {
+func (r *Runner) executePlaybook(project *structures.Project, playbook *structures.Playbook, mode int) (string, string, error) {
 	command := strings.Builder{}
 	command.WriteString("ansible-playbook")
 
@@ -137,7 +139,11 @@ func (r *Runner) executePlaybook(project *structures.Project, playbook *structur
 	cmd.Dir = fmt.Sprintf("%s/%s", r.config.Path, project.Id)
 	cmd.Env = append(cmd.Env, "ANSIBLE_STDOUT_CALLBACK=ansible.posix.json")
 
-	output, err := cmd.Output()
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
 
-	return string(output), err
+	err := cmd.Run()
+
+	return stdout.String(), stderr.String(), err
 }

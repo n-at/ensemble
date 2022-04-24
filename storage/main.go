@@ -1040,7 +1040,8 @@ func (s *Storage) PlaybookRunDelete(id string) error {
 func (s *Storage) RunResultGet(id string) (*structures.RunResult, error) {
 	query := `select id, 
                      run_id, 
-                     output 
+                     output,
+                     error
               from run_results 
               where id = $1 
                 and not coalesce(deleted, false)`
@@ -1051,7 +1052,7 @@ func (s *Storage) RunResultGet(id string) (*structures.RunResult, error) {
 	}
 
 	var result structures.RunResult
-	if err := row.Scan(&result.Id, &result.RunId, &result.Output); err != nil {
+	if err := row.Scan(&result.Id, &result.RunId, &result.Output, &result.Error); err != nil {
 		return nil, err
 	}
 	return &result, nil
@@ -1068,9 +1069,9 @@ func (s *Storage) RunResultInsert(result *structures.RunResult) error {
 		result.Id = NewId()
 	}
 
-	query := `insert into run_results (id, run_id, output) values ($1, $2, $3)`
+	query := `insert into run_results (id, run_id, output, error) values ($1, $2, $3, $4)`
 
-	_, err := s.db.Exec(query, result.Id, result.RunId, result.Output)
+	_, err := s.db.Exec(query, result.Id, result.RunId, result.Output, result.Error)
 	return err
 }
 
@@ -1098,10 +1099,11 @@ func (s *Storage) RunResultUpdate(result *structures.RunResult) error {
 
 	query := `update run_results 
               set output = $1, 
+                  error = $2,
                   deleted = false 
-              where id = $2`
+              where id = $3`
 
-	_, err = s.db.Exec(query, result.Output, result.Id)
+	_, err = s.db.Exec(query, result.Output, result.Error, result.Id)
 	return err
 }
 

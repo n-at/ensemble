@@ -198,6 +198,10 @@ var migrations = []Migration{
 		version: 24,
 		name:    "projects.repo_password field",
 		query:   `alter table projects add column repo_password varchar(500)`,
+	}, {
+		version: 25,
+		name:    "run_results.error field",
+		query:   `alter table run_results add column error text`,
 	},
 }
 
