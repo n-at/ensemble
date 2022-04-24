@@ -76,10 +76,7 @@ func (s *Server) projectNewSubmit(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
 	if !context.user.CanCreateProjects() {
-		return c.Render(http.StatusOK, "templates/error.twig", pongo2.Context{
-			"user":  context.user,
-			"error": errors.New("cannot create new project"),
-		})
+		return errors.New("cannot create new project")
 	}
 
 	project := &structures.Project{
@@ -128,6 +125,53 @@ func (s *Server) projectDeleteSubmit(c echo.Context) error {
 	return nil //TODO
 }
 
+//projectUpdate Update project repository
 func (s *Server) projectUpdate(c echo.Context) error {
-	return nil //TODO
+	project, err := s.getProjectToRead(c)
+	if err != nil {
+		return err
+	}
+
+	err = s.manager.Update(project)
+	if err != nil {
+		return err
+	}
+
+	return c.Redirect(http.StatusFound, "/projects/")
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+func (s *Server) getProjectToRead(c echo.Context) (*structures.Project, error) {
+	context := c.(*EnsembleContext)
+
+	projectId := c.Param("project_id")
+	project, err := s.store.ProjectGet(projectId)
+	if err != nil {
+		return nil, err
+	}
+	if context.user.CanEditProjects() {
+		return project, nil
+	}
+
+	if s.store.ProjectUserAccessExists(projectId, context.user.Id) {
+		return project, nil
+	} else {
+		return nil, errors.New("current user cannot view project")
+	}
+}
+
+func (s *Server) getProjectToWrite(c echo.Context) (*structures.Project, error) {
+	context := c.(*EnsembleContext)
+	if !context.user.CanEditProjects() {
+		return nil, errors.New("current user cannot edit projects")
+	}
+
+	projectId := c.Param("project_id")
+	project, err := s.store.ProjectGet(projectId)
+	if err != nil {
+		return nil, err
+	}
+
+	return project, nil
 }
