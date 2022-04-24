@@ -54,8 +54,12 @@ func New(configuration Configuration, store *storage.Storage, manager *repositor
 
 	server.e.Use(server.contextCustomizationHandler)
 
-	//TODO handlers
 	server.e.GET("/", server.index)
+
+	//authentication
+	server.e.GET("/login", server.loginForm)
+	server.e.POST("/login", server.loginSubmit)
+	server.e.GET("/logout", server.logout)
 
 	return server
 }

@@ -145,6 +145,21 @@ func (s *Storage) UserGet(id string) (*structures.User, error) {
 	return scanUser(row)
 }
 
+func (s *Storage) UserGetByLogin(login string) (*structures.User, error) {
+	query := `select id, 
+                     login, 
+                     password, 
+                     role 
+              from users 
+              where login = $1 
+                and not coalesce(deleted, false)`
+	row := s.db.QueryRow(query, login)
+	if err := row.Err(); err != nil {
+		return nil, err
+	}
+	return scanUser(row)
+}
+
 func (s *Storage) UserGetAll() ([]*structures.User, error) {
 	query := `select id, 
                      login, 

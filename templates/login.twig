@@ -1,0 +1,32 @@
+{% extends "includes/layout.twig" %}
+
+{% block title %}
+    Login - ensemble
+{% endblock %}
+
+{% block content %}
+
+    <div class="col-6 offset-3">
+        {% if error %}
+            <div class="alert alert-danger">{{error}}</div>
+        {% endif %}
+        <div class="card">
+            <div class="card-body">
+                <form method="post" action="/login" enctype="application/x-www-form-urlencoded">
+                    <div class="mb-3">
+                        <label for="login" class="form-label">Login</label>
+                        <input type="text" id="login" name="login" class="form-control" value="{{login}}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" name="password" class="form-control" required>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
