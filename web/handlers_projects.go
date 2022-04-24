@@ -85,7 +85,25 @@ func (s *Server) projectNewSubmit(c echo.Context) error {
 		VaultPassword:      c.FormValue("vault_password"),
 	}
 
-	err := s.store.ProjectInsert(project)
+	var err error
+	if len(project.Name) == 0 {
+		err = errors.New("project name should not be empty")
+	}
+	if len(project.RepositoryUrl) == 0 {
+		err = errors.New("repository URL should not be empty")
+	}
+	if len(project.RepositoryBranch) == 0 {
+		project.RepositoryBranch = structures.ProjectDefaultBranchName
+	}
+	if err != nil {
+		return c.Render(http.StatusOK, "templates/project_new.twig", pongo2.Context{
+			"user":    context.user,
+			"project": project,
+			"error":   err,
+		})
+	}
+
+	err = s.store.ProjectInsert(project)
 	if err != nil {
 		log.Warnf("projectNewSubmit unable to save project: %s", err)
 		return c.Render(http.StatusOK, "templates/project_new.twig", pongo2.Context{
