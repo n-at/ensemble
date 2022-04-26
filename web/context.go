@@ -9,7 +9,6 @@ import (
 
 type EnsembleContext struct {
 	echo.Context
-	server  *Server
 	session *structures.Session
 	user    *structures.User
 	project *structures.Project

@@ -12,13 +12,7 @@ import (
 // index
 
 func (s *Server) index(c echo.Context) error {
-	context := c.(*EnsembleContext)
-
-	if context.user != nil {
-		return c.Redirect(http.StatusFound, "/projects/")
-	} else {
-		return c.Redirect(http.StatusFound, "/login")
-	}
+	return c.Redirect(http.StatusFound, "/projects")
 }
 
 func (s *Server) loginForm(c echo.Context) error {
@@ -39,7 +33,7 @@ func (s *Server) loginSubmit(c echo.Context) error {
 	login := c.FormValue("login")
 	password := c.FormValue("password")
 
-	user, err := context.server.store.UserGetByLogin(login)
+	user, err := s.store.UserGetByLogin(login)
 	if err != nil || user == nil {
 		log.Warnf("loginSubmit get user error: %s", err)
 		return c.Render(http.StatusOK, "templates/login.twig", pongo2.Context{
@@ -55,7 +49,7 @@ func (s *Server) loginSubmit(c echo.Context) error {
 		})
 	}
 
-	session, err := context.server.store.SessionCreate(user.Id)
+	session, err := s.store.SessionCreate(user.Id)
 	if err != nil {
 		return c.Render(http.StatusOK, "templates/login.twig", pongo2.Context{
 			"login": login,

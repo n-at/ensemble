@@ -10,28 +10,19 @@ import (
 
 func (s *Server) contextCustomizationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		var user *structures.User
 		var session *structures.Session
 
 		cookie, err := c.Cookie(SessionCookieName)
 		if err == nil {
 			session, err = s.store.SessionGet(cookie.Value)
-			if err == nil {
-				user, err = s.store.UserGet(session.UserId)
-				if err != nil {
-					log.Warnf("unable to get user by session userId: %s", err)
-					user = nil
-				}
-			} else {
+			if err != nil {
 				log.Warnf("unable to get session by sessionId: %s", err)
 			}
 		}
 
 		ensembleContext := &EnsembleContext{
 			Context: c,
-			server:  s,
 			session: session,
-			user:    user,
 		}
 		return next(ensembleContext)
 	}
@@ -40,10 +31,24 @@ func (s *Server) contextCustomizationMiddleware(next echo.HandlerFunc) echo.Hand
 func (s *Server) authenticationRequiredMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		context := c.(*EnsembleContext)
-		if context.user == nil {
+
+		if context.session == nil || len(context.session.UserId) == 0 {
 			return c.Redirect(http.StatusFound, "/login")
 		}
-		return next(c)
+
+		user, err := s.store.UserGet(context.session.UserId)
+		if err != nil {
+			log.Warnf("unable to get user by session userId: %s", err)
+			return c.Redirect(http.StatusFound, "/login")
+		}
+		if user == nil {
+			log.Warn("user by session not found")
+			return c.Redirect(http.StatusFound, "/login")
+		}
+
+		context.user = user
+
+		return next(context)
 	}
 }
 
