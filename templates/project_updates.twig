@@ -1,0 +1,51 @@
+{% extends "includes/layout.twig" %}
+
+{% block title %}
+    {{project.Name}} repository updates - ensemble
+{% endblock %}
+
+{% block content %}
+    <h1>Repository updates</h1>
+    <h2>{{project.Name}}</h2>
+
+    {% if updates %}
+        <ul class="list-group">
+            {% for update in updates %}
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col-lg-10 col-md-9">
+                            <div>
+                                {% if update.Success %}
+                                    <i class="text-success bi bi-check"></i>
+                                {% else %}
+                                    <i class="text-danger bi bi-x"></i>
+                                {% endif %}
+                                {{update.Date.Format("02.01.2006 15:04:05")}}
+                            </div>
+                            <div>
+                                {{update.Revision}}
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-3 mt-3 mt-md-0 text-end text-nowrap">
+                            <a href="/projects/updates/{{project.Id}}/log/{{update.Id}}"
+                               class="btn btn-sm btn-outline-primary"
+                               title="Update log"
+                            >
+                                <i class="bi bi-list"></i>
+                            </a>
+                            <a href="/projects/updates/{{project.Id}}/delete/{{update.Id}}"
+                               class="btn btn-sm btn-outline-danger"
+                               title="Delete update log"
+                            >
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        {% include "includes/empty_state.twig" with icon="bi bi-arrow-clockwise" text="Project repository updates not found" %}
+    {% endif %}
+
+{% endblock %}

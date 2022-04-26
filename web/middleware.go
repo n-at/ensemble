@@ -28,6 +28,8 @@ func (s *Server) contextCustomizationMiddleware(next echo.HandlerFunc) echo.Hand
 	}
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 func (s *Server) authenticationRequiredMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		context := c.(*EnsembleContext)
@@ -51,6 +53,8 @@ func (s *Server) authenticationRequiredMiddleware(next echo.HandlerFunc) echo.Ha
 		return next(context)
 	}
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 func (s *Server) projectRequiredMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -96,5 +100,29 @@ func (s *Server) projectWriteAccessRequiredMiddleware(next echo.HandlerFunc) ech
 			return errors.New("project access denied")
 		}
 		return next(c)
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+func (s *Server) projectUpdateRequiredMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		projectUpdateId := c.Param("project_update_id")
+		if len(projectUpdateId) == 0 {
+			return errors.New("project update id required")
+		}
+
+		projectUpdate, err := s.store.ProjectUpdateGet(projectUpdateId)
+		if err != nil {
+			return err
+		}
+		if projectUpdate == nil {
+			return errors.New("project update not found")
+		}
+
+		context := c.(*EnsembleContext)
+		context.projectUpdate = projectUpdate
+
+		return next(context)
 	}
 }

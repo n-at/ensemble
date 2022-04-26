@@ -9,9 +9,10 @@ import (
 
 type EnsembleContext struct {
 	echo.Context
-	session *structures.Session
-	user    *structures.User
-	project *structures.Project
+	session       *structures.Session
+	user          *structures.User
+	project       *structures.Project
+	projectUpdate *structures.ProjectUpdate
 }
 
 func (c *EnsembleContext) GetSessionId() string {

@@ -78,6 +78,20 @@ func New(configuration Configuration, store *storage.Storage, manager *repositor
 	projectUpdate.Use(s.projectRequiredMiddleware)
 	projectUpdate.GET("/:project_id", s.projectUpdate)
 
+	projectUpdates := projects.Group("/updates/:project_id")
+	projectUpdates.Use(s.projectRequiredMiddleware)
+	projectUpdates.Use(s.projectWriteAccessRequiredMiddleware)
+	projectUpdates.GET("", s.projectUpdates)
+
+	projectUpdateLog := projectUpdates.Group("/log")
+	projectUpdateLog.Use(s.projectUpdateRequiredMiddleware)
+	projectUpdateLog.GET("/:project_update_id", s.projectUpdateLog)
+
+	projectUpdateDelete := projectUpdates.Group("/delete")
+	projectUpdateDelete.Use(s.projectUpdateRequiredMiddleware)
+	projectUpdateDelete.GET("/:project_update_id", s.projectUpdateDeleteForm)
+	projectUpdateDelete.POST("/:project_update_id", s.projectUpdateDeleteSubmit)
+
 	return s
 }
 
