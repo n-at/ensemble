@@ -56,10 +56,6 @@ func (s *Server) projects(c echo.Context) error {
 func (s *Server) projectNewForm(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
-	if !context.user.CanCreateProjects() {
-		return errors.New("forbidden to create new projects")
-	}
-
 	return c.Render(http.StatusOK, "templates/project_new.twig", pongo2.Context{
 		"user": context.user,
 	})
@@ -68,10 +64,6 @@ func (s *Server) projectNewForm(c echo.Context) error {
 //projectNewSubmit Save and update new project
 func (s *Server) projectNewSubmit(c echo.Context) error {
 	context := c.(*EnsembleContext)
-
-	if !context.user.CanCreateProjects() {
-		return errors.New("forbidden to create new projects")
-	}
 
 	project := &structures.Project{
 		Name:               c.FormValue("name"),
@@ -118,32 +110,24 @@ func (s *Server) projectNewSubmit(c echo.Context) error {
 		log.Warnf("projectNewSubmit unable to update project: %s", err)
 	}
 
-	return c.Redirect(http.StatusFound, "/projects/")
+	return c.Redirect(http.StatusFound, "/projects")
 }
 
 //projectEditForm Project edit form
 func (s *Server) projectEditForm(c echo.Context) error {
-	project, err := s.getProjectToWrite(c)
-	if err != nil {
-		return err
-	}
-
 	context := c.(*EnsembleContext)
 
 	return c.Render(http.StatusOK, "templates/project_edit.twig", pongo2.Context{
 		"user":    context.user,
-		"project": project,
+		"project": context.project,
 	})
 }
 
 //projectEditSubmit Save changed project data
 func (s *Server) projectEditSubmit(c echo.Context) error {
-	project, err := s.getProjectToWrite(c)
-	if err != nil {
-		return err
-	}
-
 	context := c.(*EnsembleContext)
+
+	project := context.project
 
 	project.Name = c.FormValue("name")
 	project.Description = c.FormValue("description")
@@ -154,6 +138,8 @@ func (s *Server) projectEditSubmit(c echo.Context) error {
 	project.Inventory = c.FormValue("inventory")
 	project.Variables = c.FormValue("variables")
 	project.VaultPassword = c.FormValue("vault_password")
+
+	var err error
 
 	if len(project.Name) == 0 {
 		err = errors.New("project name should not be empty")
@@ -208,87 +194,39 @@ func (s *Server) projectEditSubmit(c echo.Context) error {
 		})
 	}
 
-	return c.Redirect(http.StatusFound, "/projects/")
+	return c.Redirect(http.StatusFound, "/projects")
 }
 
 //projectDeleteForm Project delete form
 func (s *Server) projectDeleteForm(c echo.Context) error {
-	project, err := s.getProjectToWrite(c)
-	if err != nil {
-		return err
-	}
-
 	context := c.(*EnsembleContext)
 
 	return c.Render(http.StatusOK, "templates/project_delete.twig", pongo2.Context{
 		"user":    context.user,
-		"project": project,
+		"project": context.project,
 	})
 }
 
 //projectDeleteSubmit Delete selected project
 func (s *Server) projectDeleteSubmit(c echo.Context) error {
-	project, err := s.getProjectToWrite(c)
+	context := c.(*EnsembleContext)
+
+	err := s.store.ProjectDelete(context.project.Id)
 	if err != nil {
 		return err
 	}
 
-	err = s.store.ProjectDelete(project.Id)
-	if err != nil {
-		return err
-	}
-
-	return c.Redirect(http.StatusFound, "/projects/")
+	return c.Redirect(http.StatusFound, "/projects")
 }
 
 //projectUpdate Update project repository
 func (s *Server) projectUpdate(c echo.Context) error {
-	project, err := s.getProjectToRead(c)
+	context := c.(*EnsembleContext)
+
+	err := s.manager.Update(context.project)
 	if err != nil {
 		return err
 	}
 
-	err = s.manager.Update(project)
-	if err != nil {
-		return err
-	}
-
-	return c.Redirect(http.StatusFound, "/projects/")
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-func (s *Server) getProjectToRead(c echo.Context) (*structures.Project, error) {
-	context := c.(*EnsembleContext)
-
-	projectId := c.Param("project_id")
-	project, err := s.store.ProjectGet(projectId)
-	if err != nil {
-		return nil, err
-	}
-	if context.user.CanEditProjects() {
-		return project, nil
-	}
-
-	if s.store.ProjectUserAccessExists(projectId, context.user.Id) {
-		return project, nil
-	} else {
-		return nil, errors.New("forbidden to view project")
-	}
-}
-
-func (s *Server) getProjectToWrite(c echo.Context) (*structures.Project, error) {
-	context := c.(*EnsembleContext)
-
-	projectId := c.Param("project_id")
-	project, err := s.store.ProjectGet(projectId)
-	if err != nil {
-		return nil, err
-	}
-
-	if !context.user.CanEditProjects() {
-		return nil, errors.New("forbidden to edit project")
-	}
-
-	return project, nil
+	return c.Redirect(http.StatusFound, "/projects")
 }

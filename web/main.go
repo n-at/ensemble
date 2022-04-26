@@ -4,12 +4,10 @@ import (
 	"ensemble/repository"
 	"ensemble/runner"
 	"ensemble/storage"
-	"ensemble/storage/structures"
 	"github.com/flosch/pongo2/v4"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	"net/http"
-	"time"
 )
 
 const (
@@ -26,13 +24,6 @@ type Server struct {
 	store   *storage.Storage
 	manager *repository.Manager
 	runner  *runner.Runner
-}
-
-type EnsembleContext struct {
-	echo.Context
-	server  *Server
-	session *structures.Session
-	user    *structures.User
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -52,7 +43,7 @@ func New(configuration Configuration, store *storage.Storage, manager *repositor
 		runner:  runner,
 	}
 
-	s.e.Use(s.contextCustomizationHandler)
+	s.e.Use(s.contextCustomizationMiddleware)
 
 	s.e.GET("/", s.index)
 
@@ -62,64 +53,39 @@ func New(configuration Configuration, store *storage.Storage, manager *repositor
 	s.e.GET("/logout", s.logout)
 
 	//projects
-	projectsGroup := s.e.Group("/projects")
-	projectsGroup.Use(s.authenticationRequiredHandler)
-	projectsGroup.GET("/", s.projects)
-	projectsGroup.GET("/new", s.projectNewForm)
-	projectsGroup.POST("/new", s.projectNewSubmit)
-	projectsGroup.GET("/edit/:project_id", s.projectEditForm)
-	projectsGroup.POST("/edit/:project_id", s.projectEditSubmit)
-	projectsGroup.GET("/delete/:project_id", s.projectDeleteForm)
-	projectsGroup.POST("/delete/:project_id", s.projectDeleteSubmit)
-	projectsGroup.GET("/update/:project_id", s.projectUpdate)
+	projects := s.e.Group("/projects")
+	projects.Use(s.authenticationRequiredMiddleware)
+	projects.GET("", s.projects)
+
+	projectNew := projects.Group("/new")
+	projectNew.Use(s.projectCreateAccessRequiredMiddleware)
+	projectNew.GET("", s.projectNewForm)
+	projectNew.POST("", s.projectNewSubmit)
+
+	projectEdit := projects.Group("/edit")
+	projectEdit.Use(s.projectRequiredMiddleware)
+	projectEdit.Use(s.projectWriteAccessRequiredMiddleware)
+	projectEdit.GET("/:project_id", s.projectEditForm)
+	projectEdit.POST("/:project_id", s.projectEditSubmit)
+
+	projectDelete := projects.Group("/delete")
+	projectDelete.Use(s.projectRequiredMiddleware)
+	projectDelete.Use(s.projectWriteAccessRequiredMiddleware)
+	projectDelete.GET("/:project_id", s.projectDeleteForm)
+	projectDelete.POST("/:project_id", s.projectDeleteSubmit)
+
+	projectUpdate := projects.Group("/update")
+	projectUpdate.Use(s.projectRequiredMiddleware)
+	projectUpdate.GET("/:project_id", s.projectUpdate)
 
 	return s
 }
-
-///////////////////////////////////////////////////////////////////////////////
 
 func (s *Server) Start(listen string) error {
 	return s.e.Start(listen)
 }
 
-func (s *Server) contextCustomizationHandler(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		var user *structures.User
-		var session *structures.Session
-
-		cookie, err := c.Cookie(SessionCookieName)
-		if err == nil {
-			session, err = s.store.SessionGet(cookie.Value)
-			if err == nil {
-				user, err = s.store.UserGet(session.UserId)
-				if err != nil {
-					log.Warnf("unable to get user by session userId: %s", err)
-					user = nil
-				}
-			} else {
-				log.Warnf("unable to get session by sessionId: %s", err)
-			}
-		}
-
-		ensembleContext := &EnsembleContext{
-			Context: c,
-			server:  s,
-			session: session,
-			user:    user,
-		}
-		return next(ensembleContext)
-	}
-}
-
-func (s *Server) authenticationRequiredHandler(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		context := c.(*EnsembleContext)
-		if context.user == nil {
-			return c.Redirect(http.StatusFound, "/login")
-		}
-		return next(c)
-	}
-}
+///////////////////////////////////////////////////////////////////////////////
 
 // httpErrorHandler Custom HTTP error handler
 func httpErrorHandler(e error, c echo.Context) {
@@ -136,32 +102,4 @@ func httpErrorHandler(e error, c echo.Context) {
 	if err != nil {
 		log.Errorf("error page render error: %s", err)
 	}
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-func (c *EnsembleContext) GetSessionId() string {
-	cookie, err := c.Cookie(SessionCookieName)
-	if err != nil {
-		return ""
-	}
-	return cookie.Value
-}
-
-func (c *EnsembleContext) SetSessionId(id string) {
-	cookie := &http.Cookie{
-		Name:    SessionCookieName,
-		Value:   id,
-		Expires: time.Now().Add(24 * time.Hour),
-	}
-	c.SetCookie(cookie)
-}
-
-func (c *EnsembleContext) DeleteSessionId() {
-	cookie := &http.Cookie{
-		Name:    SessionCookieName,
-		Value:   "",
-		Expires: time.Now().Add(-24 * time.Hour),
-	}
-	c.SetCookie(cookie)
 }
