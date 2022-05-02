@@ -29,19 +29,19 @@
                                 {% endif %}
                             </div>
                             <div>
-                                <span class="badge bg-primary" title="Inventory">
+                                <span class="text-secondary me-3" title="Inventory">
                                     <i class="bi bi-pc-display"></i> {{project.Inventory}}
                                 </span>
-                                <span class="badge bg-secondary" title="Variables">
+                                <span class="text-secondary me-3" title="Variables">
                                     <i class="bi bi-list"></i>
                                     {% if project.Variables %}
                                         {{project.Variables}}
                                     {% else %}
                                         none
-                                    {%endif%}
+                                    {% endif %}
                                 </span>
                                 {% if update %}
-                                    <span class="badge {% if update.Success %}bg-success{% else %}bg-danger{% endif %}"
+                                    <span class="{% if update.Success %}text-success{% else %}text-danger{% endif %}"
                                           title="Last repository update">
                                         {% if update.Success %}
                                             <i class="bi bi-check"></i>
