@@ -92,6 +92,29 @@ func New(configuration Configuration, store *storage.Storage, manager *repositor
 	projectUpdateDelete.GET("/:project_update_id", s.projectUpdateDeleteForm)
 	projectUpdateDelete.POST("/:project_update_id", s.projectUpdateDeleteSubmit)
 
+	//users
+	users := s.e.Group("/users")
+	users.Use(s.authenticationRequiredMiddleware)
+	users.Use(s.userControlAccessRequiredMiddleware)
+	users.GET("", s.users)
+	users.GET("/new", s.userNewForm)
+	users.POST("/new", s.userNewSubmit)
+
+	usersEdit := users.Group("/edit/:user_id")
+	usersEdit.Use(s.userControlRequiredMiddleware)
+	usersEdit.GET("", s.userEditForm)
+	usersEdit.POST("", s.userEditSubmit)
+
+	usersDelete := users.Group("/delete/:user_id")
+	usersDelete.Use(s.userControlRequiredMiddleware)
+	usersDelete.GET("", s.userDeleteForm)
+	usersDelete.POST("", s.userDeleteSubmit)
+
+	usersProjects := users.Group("/projects/:user_id")
+	usersProjects.Use(s.userControlRequiredMiddleware)
+	usersProjects.GET("", s.userProjectsForm)
+	usersProjects.POST("", s.userProjectsSubmit)
+
 	return s
 }
 

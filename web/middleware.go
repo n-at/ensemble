@@ -126,3 +126,42 @@ func (s *Server) projectUpdateRequiredMiddleware(next echo.HandlerFunc) echo.Han
 		return next(context)
 	}
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+func (s *Server) userControlAccessRequiredMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		context := c.(*EnsembleContext)
+
+		if context.user == nil {
+			return errors.New("auth required")
+		}
+		if !context.user.CanControlUsers() {
+			return errors.New("user control access denied")
+		}
+
+		return next(c)
+	}
+}
+
+func (s *Server) userControlRequiredMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		userId := c.Param("user_id")
+		if len(userId) == 0 {
+			return errors.New("user id required")
+		}
+
+		user, err := s.store.UserGet(userId)
+		if err != nil {
+			return err
+		}
+		if user == nil {
+			return errors.New("user not found")
+		}
+
+		context := c.(*EnsembleContext)
+		context.userControl = user
+
+		return next(context)
+	}
+}

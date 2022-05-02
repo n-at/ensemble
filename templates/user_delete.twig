@@ -1,0 +1,20 @@
+{% extends "includes/layout.twig" %}
+
+{% block title %}
+    Delete user - ensemble
+{% endblock %}
+
+{% block content %}
+
+    <h1>Delete user</h1>
+
+    <form method="post" action="/users/delete/{{user_control.Id}}" enctype="application/x-www-form-urlencoded">
+        <p class="lead">
+            Confirm deletion of user &quot;{{user_control.Login}}&quot;
+        </p>
+        <button type="submit" class="btn btn-danger">
+            Delete user
+        </button>
+    </form>
+
+{% endblock %}

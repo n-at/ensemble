@@ -1,0 +1,67 @@
+{% extends "includes/layout.twig" %}
+
+{% block title %}
+    Users - ensemble
+{% endblock %}
+
+{% block content %}
+
+    <h1>Users</h1>
+
+    <p>
+        <a href="/users/new" class="btn btn-outline-success">
+            <i class="bi bi-plus"></i> New user
+        </a>
+    </p>
+
+    {% if users %}
+        <ul class="list-group">
+            {% for user_item in users %}
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col-lg-10 col-md-9">
+                            <div class="lead">
+                                {% if user_item.Role == 1 %}
+                                    <i class="bi bi-person-square" title="Admin"></i>
+                                {% endif %}
+                                {{user_item.Login}}
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-3 mt-3 mt-md-0 text-end text-nowrap">
+                            <div class="d-inline-block dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                        type="button"
+                                        id="user-menu-{{user_item.Id}}"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                    <i class="bi bi-three-dots"></i>
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="user-menu-{{user_item.Id}}">
+                                    {% if user_item.Role != 1 %}
+                                        <li>
+                                            <a class="dropdown-item" href="/users/projects/{{user_item.Id}}">Project access</a>
+                                        </li>
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                    {% endif %}
+                                    <li>
+                                        <a class="dropdown-item" href="/users/edit/{{user_item.Id}}">Edit</a>
+                                    </li>
+                                    {% if user_item.Id != user.Id %}
+                                        <li>
+                                            <a class="dropdown-item" href="/users/delete/{{user_item.Id}}">Delete</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        {% include "includes/empty_state.twig" with icon="bi bi-people" text="No users found" %}
+    {% endif %}
+
+{% endblock %}

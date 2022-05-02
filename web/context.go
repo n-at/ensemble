@@ -13,6 +13,7 @@ type EnsembleContext struct {
 	user          *structures.User
 	project       *structures.Project
 	projectUpdate *structures.ProjectUpdate
+	userControl   *structures.User
 }
 
 func (c *EnsembleContext) GetSessionId() string {
