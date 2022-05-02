@@ -67,10 +67,10 @@
                                     <li>
                                         <a class="dropdown-item" href="/projects/update/{{project.Id}}">Update repository</a>
                                     </li>
-                                    <li>
-                                        <a class="dropdown-item" href="/projects/updates/{{project.Id}}">Updates</a>
-                                    </li>
                                     {% if user.CanEditProjects() %}
+                                        <li>
+                                            <a class="dropdown-item" href="/projects/updates/{{project.Id}}">Updates</a>
+                                        </li>
                                         <li>
                                             <hr class="dropdown-divider">
                                         </li>
