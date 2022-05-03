@@ -1,5 +1,5 @@
 <div class="row">
-    <div class="col-2">
+    <div class="col-2 text-nowrap">
         {% if run.Result == 1 %}
             <span class="text-info text-nowrap">
                 <i class="bi bi-clock"></i> Running
@@ -14,30 +14,45 @@
             </span>
         {% endif %}
     </div>
-    <div class="col-2">
+    <div class="col-2 text-nowrap">
         {% if run.Mode == 1 %}
-            <span class="text-secondary">Check</span>
+            <span class="text-secondary">
+                <i class="bi bi-file-diff"></i> Check
+            </span>
             {% elif run.Mode == 2 %}
-            <span class="text-secondary">Execute</span>
+            <span class="text-primary">
+                <i class="bi bi-play-fill"></i> Execute
+            </span>
         {% endif %}
     </div>
     <div class="col-3">
         {% if run.StartTime %}
             <span class="text-secondary" title="Start time">
-                <i class="bi bi-clock"></i> {{run.StartTime.Format("02.01.2006 15:04:05")}}
+                <i class="bi bi-clock-history"></i> {{run.StartTime.Format("02.01.2006 15:04:05")}}
             </span>
         {% endif %}
     </div>
     <div class="col-3">
-        {% if run.FininshTime %}
+        {% if run.FinishTime %}
             <span class="text-secondary" title="Finish time">
                 <i class="bi bi-clock"></i> {{run.FinishTime.Format("02.01.2006 15:04:05")}}
             </span>
         {% endif %}
     </div>
-    <div class="col-2 text-end">
-        {% if run_user %}
-            <span class="text-secondary">{{ run_user.Login }}</span>
-        {% endif %}
-    </div>
+    {% if results_link %}
+        <div class="col-2 text-end">
+            <a href="/projects/playbooks/{{project.Id}}/runs/{{playbook.Id}}/result/{{run.Id}}"
+               class="btn btn-sm btn-outline-secondary"
+               title="Go to run result"
+            >
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    {% else %}
+        <div class="col-2 text-end">
+            {% if run_user %}
+                <span class="text-secondary">{{ run_user.Login }}</span>
+            {% endif %}
+        </div>
+    {% endif %}
 </div>

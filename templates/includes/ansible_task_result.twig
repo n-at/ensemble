@@ -18,18 +18,18 @@
         </div>
     </div>
     <div class="card-body">
-        {% if task_result.Message %}
-            <div>
-                <strong class="text-secondary">Message:</strong>
-                {{ task_result.Message }}
-            </div>
-        {% endif %}
-
         {% if task_result.ReturnCode %}
             <div>
                 <strong class="text-secondary">Return code:</strong>
                 {{ task_result.ReturnCode }}
             </div>
+        {% endif %}
+
+        {% if task_result.Message %}
+            <div>
+                <strong class="text-secondary">Message:</strong>
+            </div>
+            <pre><code>{{ task_result.Message }}</code></pre>
         {% endif %}
 
         {% if task_result.Stdout %}
