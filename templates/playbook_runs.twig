@@ -1,0 +1,42 @@
+{% extends "includes/layout.twig" %}
+
+{% block title %}
+    {% include "includes/project_with_playbook_name.twig" %} - playbook runs - ensemble
+{% endblock %}
+
+{% block content %}
+
+    <h1>Playbook runs</h1>
+    <h2>{% include "includes/project_with_playbook_name.twig" %}</h2>
+
+    {% if runs %}
+        <ul class="list-group mb-3">
+            {% for run in runs %}
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col-lg-10 col-md-9">
+                            {% include "includes/run_result_row.twig" %}
+                        </div>
+                        <div class="col-lg-2 col-md-3 mt-3 mt-md-0 text-end text-nowrap">
+                            <a href="/projects/playbooks/{{project.Id}}/runs/{{playbook.Id}}/result/{{run.Id}}"
+                               class="btn btn-sm btn-outline-primary"
+                               title="Run result"
+                            >
+                                <i class="bi bi-list"></i>
+                            </a>
+                            <a href="/projects/playbooks/{{project.Id}}/runs/{{playbook.Id}}/delete/{{run.Id}}"
+                               class="btn btn-sm btn-outline-danger"
+                               title="Delete"
+                            >
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        {% include "includes/empty_state.twig" with icon="bi bi-play" text="No playbook runs found" %}
+    {% endif %}
+
+{% endblock %}

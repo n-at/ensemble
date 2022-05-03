@@ -98,11 +98,30 @@ func New(configuration Configuration, store *storage.Storage, manager *repositor
 
 	playbookLock := playbooks.Group("/lock")
 	playbookLock.Use(s.playbookRequiredMiddleware)
+	playbookLock.Use(s.playbookLockAccessRequiredMiddleware)
 	playbookLock.GET("/:playbook_id/:operation", s.playbookLock)
 
 	playbookRun := playbooks.Group("/run")
 	playbookRun.Use(s.playbookRequiredMiddleware)
 	playbookRun.GET("/:playbook_id/:operation", s.playbookRun)
+
+	playbookRuns := playbooks.Group("/runs/:playbook_id")
+	playbookRuns.Use(s.playbookRequiredMiddleware)
+	playbookRuns.GET("", s.playbookRuns)
+
+	playbookRunResult := playbookRuns.Group("/result")
+	playbookRunResult.Use(s.playbookRunRequiredMiddleware)
+	playbookRunResult.GET("/:playbook_run_id", s.playbookRunResult)
+
+	playbookRunDelete := playbookRuns.Group("/delete")
+	playbookRunDelete.Use(s.playbookRunRequiredMiddleware)
+	playbookRunDelete.Use(s.projectWriteAccessRequiredMiddleware)
+	playbookRunDelete.GET("/:playbook_run_id", s.playbookRunDeleteForm)
+	playbookRunDelete.POST("/:playbook_run_id", s.playbookRunDeleteSubmit)
+
+	playbookRunStatus := playbookRuns.Group("/status")
+	playbookRunStatus.Use(s.playbookRunRequiredMiddleware)
+	playbookRunStatus.GET("/:playbook_run_id", s.playbookRunStatus)
 
 	//users
 	users := s.e.Group("/users")

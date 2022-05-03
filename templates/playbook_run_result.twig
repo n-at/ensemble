@@ -1,0 +1,50 @@
+{% extends "includes/layout.twig" %}
+
+{% block title %}
+    {% include "includes/project_with_playbook_name.twig" %} - run result - ensemble
+{% endblock %}
+
+{% block content %}
+
+    <h1>Playbook run result</h1>
+    <h2>{% include "includes/project_with_playbook_name.twig" %}</h2>
+
+    <div class="mb-3 mt-3">
+        {% include "includes/run_result_row.twig" %}
+    </div>
+
+    {% if run_user %}
+        <p>
+            Launched by {{ run_user.Login }}
+        </p>
+    {% endif %}
+
+    {% if run.Result == 1 %}
+        Running...
+    {% endif %}
+
+    {% if run_result.Error %}
+        <div class="card border-danger mb-3">
+            <div class="card-header text-white bg-danger">
+                Run error
+            </div>
+            <div class="card-body">
+                <pre><code>{{ run_result.Error }}</code></pre>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if run_result_ansible %}
+        TODO ansible
+    {% elif run_result.Output %}
+        <div class="card mb-3">
+            <div class="card-header">
+                Run result
+            </div>
+            <div class="card-body">
+                <pre><code>{{ run_result.Output }}</code></pre>
+            </div>
+        </div>
+    {% endif %}
+
+{% endblock %}

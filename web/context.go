@@ -14,6 +14,7 @@ type EnsembleContext struct {
 	project       *structures.Project
 	projectUpdate *structures.ProjectUpdate
 	playbook      *structures.Playbook
+	playbookRun   *structures.PlaybookRun
 	userControl   *structures.User
 }
 

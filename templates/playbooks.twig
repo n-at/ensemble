@@ -55,7 +55,7 @@
                                         </li>
                                     {% endif %}
                                     <li>
-                                        <a class="dropdown-item" href="/projects/playbooks/{{project.Id}}/results/{{playbook.Id}}">Results</a>
+                                        <a class="dropdown-item" href="/projects/playbooks/{{project.Id}}/runs/{{playbook.Id}}">Playbook runs</a>
                                     </li>
                                     {% if user.CanLockPlaybooks() %}
                                         <li>
@@ -75,44 +75,7 @@
                     </div>
                     {% if run %}
                         <div class="mt-3">
-                            <div class="row">
-                                <div class="col-3">
-                                    {% if run.Result == 1 %}
-                                        <span class="text-info">
-                                            <i class="bi bi-clock"></i> Running
-                                        </span>
-                                    {% elif run.Result == 2 %}
-                                        <span class="text-success">
-                                            <i class="bi bi-check"></i> Finished
-                                        </span>
-                                    {% elif run.Result == 3 %}
-                                        <span class="text-danger">
-                                            <i class="bi bi-x"></i> Error
-                                        </span>
-                                    {% endif %}
-                                </div>
-                                <div class="col-3">
-                                    {% if run.Mode == 1 %}
-                                        <span class="text-secondary">Check</span>
-                                    {% elif run.Mode == 2 %}
-                                        <span class="text-secondary">Execute</span>
-                                    {% endif %}
-                                </div>
-                                <div class="col-3">
-                                    {% if run.StartTime %}
-                                        <span class="text-secondary" title="Start time">
-                                            <i class="bi bi-clock"></i> {{run.StartTime.Format("02.01.2006 15:04:05")}}
-                                        </span>
-                                    {% endif %}
-                                </div>
-                                <div class="col-3">
-                                    {% if run.FininshTime %}
-                                        <span class="text-secondary" title="Finish time">
-                                            <i class="bi bi-clock"></i> {{run.FinishTime.Format("02.01.2006 15:04:05")}}
-                                        </span>
-                                    {% endif %}
-                                </div>
-                            </div>
+                            {% include "includes/run_result_row.twig" %}
                         </div>
                     {% endif %}
                 </li>

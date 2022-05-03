@@ -1,0 +1,24 @@
+{% extends "includes/layout.twig" %}
+
+{% block title %}
+    Delete run - ensemble
+{% endblock %}
+
+{% block content %}
+
+    <h1>Delete playbook run</h1>
+    <h2>{% include "includes/project_with_playbook_name.twig" %}</h2>
+
+    <form method="post" action="/projects/playbooks/{{project.Id}}/runs/{{playbook.Id}}/delete/{{run.Id}}" enctype="application/x-www-form-urlencoded">
+        <p class="lead">
+            Confirm deletion of playbook run on {{run.StartTime.Format("02.01.2006 15:04:05")}}
+        </p>
+        <hr>
+        <div class="mb-3 text-end">
+            <button type="submit" class="btn btn-danger">
+                Delete playbook run
+            </button>
+        </div>
+    </form>
+
+{% endblock %}

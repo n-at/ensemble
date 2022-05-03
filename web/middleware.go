@@ -156,6 +156,44 @@ func (s *Server) playbookRequiredMiddleware(next echo.HandlerFunc) echo.HandlerF
 	}
 }
 
+func (s *Server) playbookLockAccessRequiredMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		context := c.(*EnsembleContext)
+		if !context.user.CanLockPlaybooks() {
+			return errors.New("cannot lock playbooks")
+		}
+		return next(c)
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+func (s *Server) playbookRunRequiredMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		context := c.(*EnsembleContext)
+
+		playbookRunId := c.Param("playbook_run_id")
+		if len(playbookRunId) == 0 {
+			return errors.New("playbook run id required")
+		}
+
+		playbookRun, err := s.store.PlaybookRunGet(playbookRunId)
+		if err != nil {
+			return err
+		}
+		if playbookRun == nil {
+			return errors.New("playbook run not found")
+		}
+		if playbookRun.PlaybookId != context.playbook.Id {
+			return errors.New("playbook run does not belong to project")
+		}
+
+		context.playbookRun = playbookRun
+
+		return next(context)
+	}
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 func (s *Server) userControlAccessRequiredMiddleware(next echo.HandlerFunc) echo.HandlerFunc {

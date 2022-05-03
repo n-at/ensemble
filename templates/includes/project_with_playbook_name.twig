@@ -1,0 +1,6 @@
+{{project.Name}} -
+{% if playbook.Name %}
+    {{ playbook.Name }}
+{% else %}
+    {{ playbook.Filename }}
+{% endif %}

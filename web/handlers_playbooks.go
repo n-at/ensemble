@@ -65,7 +65,7 @@ func (s *Server) playbookRun(c echo.Context) error {
 		return err
 	}
 
-	url := fmt.Sprintf("/projects/playbooks/%s/results/%s/log/%s", context.project.Id, context.playbook.Id, run.Id)
+	url := fmt.Sprintf("/projects/playbooks/%s/runs/%s/result/%s", context.project.Id, context.playbook.Id, run.Id)
 
 	return c.Redirect(http.StatusFound, url)
 }
@@ -86,9 +86,6 @@ func (s *Server) playbookLock(c echo.Context) error {
 		return errors.New("unknown lock operation")
 	}
 
-	if !context.user.CanLockPlaybooks() {
-		return errors.New("cannot lock playbooks")
-	}
 	if err := s.store.PlaybookLock(context.playbook.Id, lock); err != nil {
 		return err
 	}
