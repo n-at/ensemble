@@ -11,7 +11,7 @@
     <h2>{{project.Name}}</h2>
 
     {% if playbooks %}
-        <ul class="list-group mb-3">
+        <ul class="list-group mb-3 mt-3">
             {% for playbookInfo in playbooks %}
                 {% set playbook = playbookInfo.Playbook %}
                 {% set run = playbookInfo.Run %}
@@ -35,6 +35,14 @@
                             {% endif %}
                         </div>
                         <div class="col-lg-2 col-md-3 mt-3 mt-md-0 text-end text-nowrap">
+                            {% if not playbook.Locked %}
+                                <a href="/projects/playbooks/{{project.Id}}/run/{{playbook.Id}}/execute"
+                                   class="btn btn-sm btn-outline-primary"
+                                   title="Execute"
+                                >
+                                    <i class="bi bi-play-fill"></i>
+                                </a>
+                            {% endif %}
                             <div class="d-inline-block dropdown">
                                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
                                         type="button"

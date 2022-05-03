@@ -10,18 +10,29 @@
     <h1>Playbook run result</h1>
     <h2>{% include "includes/project_with_playbook_name.twig" %}</h2>
 
-    <div class="mb-3 mt-3">
-        {% include "includes/run_result_row.twig" %}
+    <div class="mb-3 mt-3 card">
+        <div class="card-body">
+            {% include "includes/run_result_row.twig" %}
+        </div>
     </div>
 
-    {% if run_user %}
-        <p>
-            Launched by {{ run_user.Login }}
-        </p>
-    {% endif %}
-
     {% if run.Result == 1 %}
-        Running...
+        <div class="mb-3">
+            <div class="spinner">
+                <div class="rect1"></div>
+                <div class="rect2"></div>
+                <div class="rect3"></div>
+                <div class="rect4"></div>
+                <div class="rect5"></div>
+            </div>
+            <div id="running-status"
+                 class="text-center"
+                 data-status-url="/projects/playbooks/{{project.Id}}/runs/{{playbook.Id}}/status/{{run.Id}}"
+            >
+                Running...
+            </div>
+            <script src="/assets/running.js"></script>
+        </div>
     {% endif %}
 
     {% if run_result.Error %}

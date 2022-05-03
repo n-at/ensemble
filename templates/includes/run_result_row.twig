@@ -1,20 +1,20 @@
 <div class="row">
-    <div class="col-3">
+    <div class="col-2">
         {% if run.Result == 1 %}
-            <span class="text-info">
+            <span class="text-info text-nowrap">
                 <i class="bi bi-clock"></i> Running
             </span>
             {% elif run.Result == 2 %}
-            <span class="text-success">
+            <span class="text-success text-nowrap">
                 <i class="bi bi-check"></i> Finished
             </span>
             {% elif run.Result == 3 %}
-            <span class="text-danger">
+            <span class="text-danger text-nowrap">
                 <i class="bi bi-x"></i> Error
             </span>
         {% endif %}
     </div>
-    <div class="col-3">
+    <div class="col-2">
         {% if run.Mode == 1 %}
             <span class="text-secondary">Check</span>
             {% elif run.Mode == 2 %}
@@ -33,6 +33,11 @@
             <span class="text-secondary" title="Finish time">
                 <i class="bi bi-clock"></i> {{run.FinishTime.Format("02.01.2006 15:04:05")}}
             </span>
+        {% endif %}
+    </div>
+    <div class="col-2 text-end">
+        {% if run_user %}
+            <span class="text-secondary">{{ run_user.Login }}</span>
         {% endif %}
     </div>
 </div>
