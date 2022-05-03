@@ -47,9 +47,6 @@
         {% endif %}
 
         {% if task_result.Diff %}
-            <div>
-                <strong class="text-secondary">Differences:</strong>
-            </div>
             {% for diff in task_result.Diff %}
                 <div class="diff">
                     <div class="diff-before-header">{{ diff.BeforeHeader }}</div>
