@@ -129,6 +129,35 @@ func (s *Server) projectUpdateRequiredMiddleware(next echo.HandlerFunc) echo.Han
 
 ///////////////////////////////////////////////////////////////////////////////
 
+func (s *Server) playbookRequiredMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		playbookId := c.Param("playbook_id")
+		if len(playbookId) == 0 {
+			return errors.New("playbook is required")
+		}
+
+		context := c.(*EnsembleContext)
+
+		if context.project == nil {
+			return errors.New("project access required")
+		}
+
+		playbook, err := s.store.PlaybookGet(playbookId)
+		if err != nil {
+			return err
+		}
+		if playbook == nil {
+			return errors.New("playbook not found")
+		}
+
+		context.playbook = playbook
+
+		return next(context)
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 func (s *Server) userControlAccessRequiredMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		context := c.(*EnsembleContext)

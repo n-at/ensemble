@@ -1,0 +1,125 @@
+{% extends "includes/layout.twig" %}
+
+{% block title %}
+    {{project.Name}} playbooks - ensemble
+{% endblock %}
+
+{% block content %}
+
+    <h1>Playbooks</h1>
+    <h2>{{project.Name}}</h2>
+
+    {% if playbooks %}
+        <ul class="list-group mb-3">
+            {% for playbookInfo in playbooks %}
+                {% set playbook = playbookInfo.Playbook %}
+                {% set run = playbookInfo.Run %}
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col-lg-10 col-md-9">
+                            <div class="lead">
+                                {% if playbook.Locked %}
+                                    <i class="bi bi-lock" title="Locked"></i>
+                                {% endif %}
+                                {% if playbook.Name %}
+                                    {{ playbook.Name }}
+                                {% else %}
+                                    {{ playbook.Filename }}
+                                {% endif %}
+                            </div>
+                            {% if playbook.Description %}
+                                <div class="mt-3">
+                                    {{ playbook.Description }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-lg-2 col-md-3 mt-3 mt-md-0 text-end text-nowrap">
+                            <div class="d-inline-block dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                        type="button"
+                                        id="playbook-menu-{{project.Id}}"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                    <i class="bi bi-three-dots"></i>
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="playbook-menu-{{playbook.Id}}">
+                                    {% if not playbook.Locked %}
+                                        <li>
+                                            <a class="dropdown-item" href="/projects/playbooks/{{project.Id}}/run/{{playbook.Id}}/execute">Execute</a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="/projects/playbooks/{{project.Id}}/run/{{playbook.Id}}/check">Check</a>
+                                        </li>
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                    {% endif %}
+                                    <li>
+                                        <a class="dropdown-item" href="/projects/playbooks/{{project.Id}}/results/{{playbook.Id}}">Results</a>
+                                    </li>
+                                    {% if user.CanLockPlaybooks() %}
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                        <li>
+                                            {% if playbook.Locked %}
+                                                <a class="dropdown-item" href="/projects/playbooks/{{project.Id}}/lock/{{playbook.Id}}/unlock">Unlock</a>
+                                            {% else %}
+                                                <a class="dropdown-item" href="/projects/playbooks/{{project.Id}}/lock/{{playbook.Id}}/lock">Lock</a>
+                                            {% endif %}
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    {% if run %}
+                        <div class="mt-3">
+                            <div class="row">
+                                <div class="col-3">
+                                    {% if run.Result == 1 %}
+                                        <span class="text-info">
+                                            <i class="bi bi-clock"></i> Running
+                                        </span>
+                                    {% elif run.Result == 2 %}
+                                        <span class="text-success">
+                                            <i class="bi bi-check"></i> Finished
+                                        </span>
+                                    {% elif run.Result == 3 %}
+                                        <span class="text-danger">
+                                            <i class="bi bi-x"></i> Error
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <div class="col-3">
+                                    {% if run.Mode == 1 %}
+                                        <span class="text-secondary">Check</span>
+                                    {% elif run.Mode == 2 %}
+                                        <span class="text-secondary">Execute</span>
+                                    {% endif %}
+                                </div>
+                                <div class="col-3">
+                                    {% if run.StartTime %}
+                                        <span class="text-secondary" title="Start time">
+                                            <i class="bi bi-clock"></i> {{run.StartTime.Format("02.01.2006 15:04:05")}}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <div class="col-3">
+                                    {% if run.FininshTime %}
+                                        <span class="text-secondary" title="Finish time">
+                                            <i class="bi bi-clock"></i> {{run.FinishTime.Format("02.01.2006 15:04:05")}}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        {% include "includes/empty_state.twig" with icon="bi bi-list" text="No playbooks found" %}
+    {% endif %}
+
+{% endblock %}

@@ -92,6 +92,18 @@ func New(configuration Configuration, store *storage.Storage, manager *repositor
 	projectUpdateDelete.GET("/:project_update_id", s.projectUpdateDeleteForm)
 	projectUpdateDelete.POST("/:project_update_id", s.projectUpdateDeleteSubmit)
 
+	playbooks := projects.Group("/playbooks/:project_id")
+	playbooks.Use(s.projectRequiredMiddleware)
+	playbooks.GET("", s.playbooks)
+
+	playbookLock := playbooks.Group("/lock")
+	playbookLock.Use(s.playbookRequiredMiddleware)
+	playbookLock.GET("/:playbook_id/:operation", s.playbookLock)
+
+	playbookRun := playbooks.Group("/run")
+	playbookRun.Use(s.playbookRequiredMiddleware)
+	playbookRun.GET("/:playbook_id/:operation", s.playbookRun)
+
 	//users
 	users := s.e.Group("/users")
 	users.Use(s.authenticationRequiredMiddleware)

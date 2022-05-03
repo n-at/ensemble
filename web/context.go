@@ -13,6 +13,7 @@ type EnsembleContext struct {
 	user          *structures.User
 	project       *structures.Project
 	projectUpdate *structures.ProjectUpdate
+	playbook      *structures.Playbook
 	userControl   *structures.User
 }
 
