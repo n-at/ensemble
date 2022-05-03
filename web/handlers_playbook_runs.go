@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/flosch/pongo2/v4"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/gommon/log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -35,16 +35,18 @@ func (s *Server) playbookRunResult(c echo.Context) error {
 
 	runResult, err := s.store.RunResultGet(context.playbookRun.Id)
 	if err == nil {
+		ansibleResult = &structures.AnsibleExecution{}
 		if err := json.Unmarshal([]byte(runResult.Output), ansibleResult); err != nil {
-			log.Warnf("unable to unmarshal run result for %s", context.playbookRun.Id)
+			log.Warnf("unable to unmarshal run result for %s: %s", context.playbookRun.Id, err)
+			ansibleResult = nil
 		}
 	} else {
-		log.Warnf("unable to get run result for %s", context.playbookRun.Id)
+		log.Warnf("unable to get run result for %s: %s", context.playbookRun.Id, err)
 	}
 
 	runUser, err = s.store.UserGet(context.playbookRun.UserId)
 	if err != nil {
-		log.Warnf("unable to get run user for %s", context.playbookRun.Id)
+		log.Warnf("unable to get run user for %s: %s", context.playbookRun.Id, err)
 	}
 
 	return c.Render(http.StatusOK, "templates/playbook_run_result.twig", pongo2.Context{

@@ -47,7 +47,88 @@
     {% endif %}
 
     {% if run_result_ansible %}
-        TODO ansible
+        {% set stats = run_result_ansible.Stats %}
+        {% set plays = run_result_ansible.Plays %}
+        <div class="card mb-3">
+            <div class="card-header">
+                Run summary
+            </div>
+            <div class="card-body">
+                {% for host, result in stats %}
+                    {% if forloop.Counter > 1 %}
+                        <hr>
+                    {% endif %}
+                    <p>
+                        <strong>Host:</strong> {{host}}
+                    </p>
+                    <div class="row">
+                        <div class="col-2">
+                            <span class="text-success">Ok: {{result.Ok}}</span>
+                        </div>
+                        <div class="col-2">
+                            <span class="text-warning">Changed: {{result.Changed}}</span>
+                        </div>
+                        <div class="col-2">
+                            <span class="text-danger">Failures: {{result.Failures}}</span>
+                        </div>
+                        <div class="col-2">
+                            <span class="text-secondary">Ignored: {{result.Ignored}}</span>
+                        </div>
+                        <div class="col-2">
+                            <span class="text-secondary">Skipped: {{result.Skipped}}</span>
+                        </div>
+                        <div class="col-2">
+                            <span class="text-secondary">Unreachable: {{result.Unreachable}}</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% for play in plays %}
+            {% set info = play.PlayInfo %}
+            {% set tasks = play.Tasks %}
+
+            {% if forloop.Counter > 1 %}
+                <hr>
+            {% endif %}
+
+            <h3>Play: {{ info.Name }}</h3>
+            <p>
+                <strong>Duration:</strong>
+                {{ info.Duration.StartDate().Format("02.01.2006 15:04:05") }} - {{ info.Duration.EndDate().Format("02.01.2006 15:04:05") }}
+            </p>
+
+            {% for task in tasks %}
+                {% set task_info = task.TaskInfo %}
+                {% set task_results = task.TaskResults %}
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <div>
+                            <strong>Task:</strong> {{ task_info.Name }}
+                        </div>
+                        <div>
+                            <strong>Duration:</strong>
+                            {{ task_info.Duration.StartDate().Format("02.01.2006 15:04:05") }} - {{ task_info.Duration.EndDate().Format("02.01.2006 15:04:05") }}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% for host, task_result in task_results %}
+                            {% if forloop.Counter > 1 %}
+                                <hr>
+                            {% endif %}
+                            {% include "includes/ansible_task_result.twig" with title="Host" host=host task_result=task_result %}
+                            {% if task_result.ItemResults %}
+                                <h5>With items</h5>
+                                {% for item_result in task_result.ItemResults %}
+                                    {% include "includes/ansible_task_result.twig" with title="Item" host=item_result.Item task_result=item_result %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endfor %}
     {% elif run_result.Output %}
         <div class="card mb-3">
             <div class="card-header">

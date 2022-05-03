@@ -1,0 +1,65 @@
+<div class="card mb-2">
+    <div class="card-header">
+        <div>
+            <strong>{{title}}:</strong> {{host}}
+            {% if task_result.Changed %}
+                - <span class="text-warning">changed</span>
+            {% endif %}
+            {% if task_result.Failed %}
+                - <span class="text-danger">failed</span>
+            {% endif %}
+            {% if task_result.Skipped %}
+                - <span class="text-secondary">skipped</span>
+            {% endif %}
+        </div>
+        <div>
+            <strong>Action:</strong>
+            {{task_result.Action}}
+        </div>
+    </div>
+    <div class="card-body">
+        {% if task_result.Message %}
+            <div>
+                <strong class="text-secondary">Message:</strong>
+                {{ task_result.Message }}
+            </div>
+        {% endif %}
+
+        {% if task_result.ReturnCode %}
+            <div>
+                <strong class="text-secondary">Return code:</strong>
+                {{ task_result.ReturnCode }}
+            </div>
+        {% endif %}
+
+        {% if task_result.Stdout %}
+            <div>
+                <strong class="text-secondary">Standard output:</strong>
+            </div>
+            <pre><code>{{ task_result.Stdout }}</code></pre>
+        {% endif %}
+
+        {% if task_result.Stderr %}
+            <div>
+                <strong class="text-secondary">Standard errors:</strong>
+            </div>
+            <pre><code>{{ task_result.Stderr }}</code></pre>
+        {% endif %}
+
+        {% if task_result.Diff %}
+            <div>
+                <strong class="text-secondary">Differences:</strong>
+            </div>
+            {% for diff in task_result.Diff %}
+                <div>
+                    <em>Before: {{ diff.BeforeHeader }}</em>
+                </div>
+                <pre><code>{{ diff.Before }}</code></pre>
+                <div>
+                    <em>After: {{ diff.AfterHeader }}</em>
+                </div>
+                <pre><code>{{ diff.After }}</code></pre>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
