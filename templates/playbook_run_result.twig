@@ -4,6 +4,18 @@
     {% include "includes/project_with_playbook_name.twig" %} - run result - ensemble
 {% endblock %}
 
+{% block assets %}
+    <script src="/assets/node_modules/jquery/dist/jquery.min.js"></script>
+
+    <script src="/assets/node_modules/diff/dist/diff.js"></script>
+
+    <link rel="stylesheet" href="/assets/node_modules/diff2html/bundles/css/diff2html.min.css">
+    <script src="/assets/node_modules/diff2html/bundles/js/diff2html.min.js"></script>
+    <script src="/assets/node_modules/diff2html/bundles/js/diff2html-ui.min.js"></script>
+
+    <script src="/assets/diff.js"></script>
+{% endblock %}
+
 {% block content %}
     {% include "includes/breadcrumbs/project_playbook_run_result.twig" %}
 

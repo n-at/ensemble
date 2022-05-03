@@ -51,14 +51,12 @@
                 <strong class="text-secondary">Differences:</strong>
             </div>
             {% for diff in task_result.Diff %}
-                <div>
-                    <em>Before: {{ diff.BeforeHeader }}</em>
+                <div class="diff">
+                    <div class="diff-before-header">{{ diff.BeforeHeader }}</div>
+                    <pre class="diff-before-content">{{ diff.Before }}</pre>
+                    <div class="diff-after-header">{{ diff.AfterHeader }}</div>
+                    <pre class="diff-after-content">{{ diff.After }}</pre>
                 </div>
-                <pre><code>{{ diff.Before }}</code></pre>
-                <div>
-                    <em>After: {{ diff.AfterHeader }}</em>
-                </div>
-                <pre><code>{{ diff.After }}</code></pre>
             {% endfor %}
         {% endif %}
     </div>
