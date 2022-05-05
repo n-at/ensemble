@@ -52,6 +52,12 @@ func New(configuration Configuration, store *storage.Storage, manager *repositor
 	s.e.POST("/login", s.loginSubmit)
 	s.e.GET("/logout", s.logout)
 
+	//user profile
+	profile := s.e.Group("/profile")
+	profile.Use(s.authenticationRequiredMiddleware)
+	profile.GET("", s.profileForm)
+	profile.POST("", s.profileSubmit)
+
 	//projects
 	projects := s.e.Group("/projects")
 	projects.Use(s.authenticationRequiredMiddleware)
