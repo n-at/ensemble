@@ -133,11 +133,18 @@ func (s *Server) projectEditSubmit(c echo.Context) error {
 	project.Description = c.FormValue("description")
 	project.RepositoryUrl = c.FormValue("repo_url")
 	project.RepositoryLogin = c.FormValue("repo_login")
-	project.RepositoryPassword = c.FormValue("repo_password")
 	project.RepositoryBranch = c.FormValue("repo_branch")
 	project.Inventory = c.FormValue("inventory")
 	project.Variables = c.FormValue("variables")
-	project.VaultPassword = c.FormValue("vault_password")
+
+	repositoryPassword := c.FormValue("repo_password")
+	if len(repositoryPassword) > 0 {
+		project.RepositoryPassword = repositoryPassword
+	}
+	vaultPassword := c.FormValue("vault_password")
+	if len(vaultPassword) > 0 {
+		project.VaultPassword = vaultPassword
+	}
 
 	var err error
 

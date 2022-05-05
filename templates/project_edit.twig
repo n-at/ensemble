@@ -9,7 +9,7 @@
     <h1>Edit project</h1>
 
     <form method="post" action="/projects/edit/{{project.Id}}" enctype="application/x-www-form-urlencoded">
-        {% include "includes/form_project.twig" %}
+        {% include "includes/form_project.twig" with mode="edit" %}
     </form>
 
 {% endblock %}

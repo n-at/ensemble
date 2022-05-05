@@ -30,8 +30,13 @@
     </div>
     <div class="mb-3">
         <label for="repo_password" class="form-label">Password</label>
-        <input type="password" id="repo_password" name="repo_password" class="form-control" value="{{project.RepositoryPassword}}">
+        <input type="password" id="repo_password" name="repo_password" class="form-control" value="">
     </div>
+    {% if mode == "edit" %}
+        <p class="alert alert-info">
+            Leave password field blank to keep current value
+        </p>
+    {% endif %}
     <div class="mb-3">
         <label for="repo_branch" class="form-label">Branch</label>
         <input type="text" id="repo_branch" name="repo_branch" class="form-control" value="{{project.RepositoryBranch}}">
@@ -59,8 +64,13 @@
     </div>
     <div class="mb-3">
         <label for="vault_password" class="form-label">Vault password</label>
-        <input type="password" id="vault_password" name="vault_password" class="form-control" value="{{project.VaultPassword}}">
+        <input type="password" id="vault_password" name="vault_password" class="form-control" value="">
     </div>
+    {% if mode == "edit" %}
+        <p class="alert alert-info">
+            Leave vault password field blank to keep current value
+        </p>
+    {% endif %}
 </fieldset>
 
 <hr>
