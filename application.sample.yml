@@ -4,9 +4,11 @@ web:
   listen: ":3000"
   debugTemplates: false
 
-#PostgreSQL connection settings
 db:
+  #PostgreSQL connection string
   url: "postgres://ensemble:ensemble@localhost:5432/ensemble?sslmode=disable"
+  #Passwords and keys encryption secret (random string)
+  secret: ""
 
 #Directory to store project repositories
 path: "data"

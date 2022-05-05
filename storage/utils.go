@@ -6,6 +6,7 @@ import (
 	cryptoRand "crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -102,6 +103,10 @@ func DecryptString(key, text string) (string, error) {
 	}
 
 	nonceSize := aesGCM.NonceSize()
+	if len(enc) < nonceSize {
+		return "", errors.New("encrypted text too short")
+	}
+
 	nonce, ciphertext := enc[:nonceSize], enc[nonceSize:]
 
 	plaintext, err := aesGCM.Open(nil, nonce, ciphertext, nil)

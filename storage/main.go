@@ -11,11 +11,13 @@ import (
 )
 
 type Configuration struct {
-	Url string
+	Url    string
+	Secret string
 }
 
 type Storage struct {
-	db *sql.DB
+	config Configuration
+	db     *sql.DB
 }
 
 type Scanner interface {
@@ -38,7 +40,10 @@ func New(configuration Configuration) (*Storage, error) {
 		return nil, err
 	}
 
-	return &Storage{db: db}, nil
+	return &Storage{
+		config: configuration,
+		db:     db,
+	}, nil
 }
 
 func (s *Storage) Close() error {
@@ -287,12 +292,12 @@ func (s *Storage) UserEnsureAdminExists() error {
 //Project
 ///////////////////////////////////////////////////////////////////////////////
 
-func scanProject(s Scanner) (*structures.Project, error) {
+func (s *Storage) scanProject(scanner Scanner) (*structures.Project, error) {
 	var id, name, description, inventory, variables, vaultPassword sql.NullString
 	var repositoryUrl, repositoryLogin, repositoryPassword, repositoryBranch sql.NullString
 	var inventories, collections, variablesAvailable sql.NullString
 	var variablesMain, variablesVault sql.NullBool
-	if err := s.Scan(
+	if err := scanner.Scan(
 		&id,
 		&name,
 		&description,
@@ -323,13 +328,22 @@ func scanProject(s Scanner) (*structures.Project, error) {
 		collectionsList = strings.Split(collections.String, "|")
 	}
 
+	repositoryPasswordDecrypted, err := DecryptString(s.config.Secret, repositoryPassword.String)
+	if err != nil {
+		return nil, err
+	}
+	vaultPasswordDecrypted, err := DecryptString(s.config.Secret, vaultPassword.String)
+	if err != nil {
+		return nil, err
+	}
+
 	project := structures.Project{
 		Id:                 id.String,
 		Name:               name.String,
 		Description:        description.String,
 		RepositoryUrl:      repositoryUrl.String,
 		RepositoryLogin:    repositoryLogin.String,
-		RepositoryPassword: repositoryPassword.String,
+		RepositoryPassword: repositoryPasswordDecrypted,
 		RepositoryBranch:   repositoryBranch.String,
 		Inventory:          inventory.String,
 		InventoryList:      inventoryList,
@@ -338,7 +352,7 @@ func scanProject(s Scanner) (*structures.Project, error) {
 		VariablesList:      variablesList,
 		VariablesMain:      variablesMain.Bool,
 		VariablesVault:     variablesVault.Bool,
-		VaultPassword:      vaultPassword.String,
+		VaultPassword:      vaultPasswordDecrypted,
 	}
 
 	return &project, nil
@@ -387,7 +401,7 @@ func (s *Storage) ProjectGet(id string) (*structures.Project, error) {
 		return nil, err
 	}
 
-	return scanProject(row)
+	return s.scanProject(row)
 }
 
 func (s *Storage) ProjectGetAll() ([]*structures.Project, error) {
@@ -418,7 +432,7 @@ func (s *Storage) ProjectGetAll() ([]*structures.Project, error) {
 
 	var projects []*structures.Project
 	for rows.Next() {
-		project, err := scanProject(rows)
+		project, err := s.scanProject(rows)
 		if err != nil {
 			log.Warnf("unable to read project: %s", err)
 			continue
@@ -459,7 +473,7 @@ func (s *Storage) ProjectGetByUser(userId string) ([]*structures.Project, error)
 
 	var projects []*structures.Project
 	for rows.Next() {
-		project, err := scanProject(rows)
+		project, err := s.scanProject(rows)
 		if err != nil {
 			log.Warnf("unable to read project: %s", err)
 		}
@@ -512,14 +526,23 @@ func (s *Storage) ProjectInsert(project *structures.Project) error {
 	variablesList := strings.Join(project.VariablesList, "|")
 	collectionsList := strings.Join(project.CollectionsList, "|")
 
-	_, err := s.db.Exec(
+	repositoryPasswordEncrypted, err := EncryptString(s.config.Secret, project.RepositoryPassword)
+	if err != nil {
+		return err
+	}
+	vaultPasswordEncrypted, err := EncryptString(s.config.Secret, project.VaultPassword)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.Exec(
 		query,
 		project.Id,
 		project.Name,
 		project.Description,
 		project.RepositoryUrl,
 		project.RepositoryLogin,
-		project.RepositoryPassword,
+		repositoryPasswordEncrypted,
 		project.RepositoryBranch,
 		project.Inventory,
 		inventoryList,
@@ -528,7 +551,7 @@ func (s *Storage) ProjectInsert(project *structures.Project) error {
 		variablesList,
 		project.VariablesMain,
 		project.VariablesVault,
-		project.VaultPassword)
+		vaultPasswordEncrypted)
 	return err
 }
 
@@ -580,19 +603,28 @@ func (s *Storage) ProjectUpdate(project *structures.Project) error {
 	variablesList := strings.Join(project.VariablesList, "|")
 	collectionsList := strings.Join(project.CollectionsList, "|")
 
+	repositoryPasswordEncrypted, err := EncryptString(s.config.Secret, project.RepositoryPassword)
+	if err != nil {
+		return err
+	}
+	vaultPasswordEncrypted, err := EncryptString(s.config.Secret, project.VaultPassword)
+	if err != nil {
+		return err
+	}
+
 	_, err = s.db.Exec(
 		query,
 		project.Name,
 		project.Description,
 		project.RepositoryUrl,
 		project.RepositoryLogin,
-		project.RepositoryPassword,
+		repositoryPasswordEncrypted,
 		project.RepositoryBranch,
 		project.Inventory,
 		inventoryList,
 		project.Variables,
 		variablesList,
-		project.VaultPassword,
+		vaultPasswordEncrypted,
 		collectionsList,
 		project.VariablesMain,
 		project.VariablesVault,

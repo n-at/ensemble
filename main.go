@@ -41,14 +41,20 @@ func init() {
 		log.Fatalf("unable to read web configuration: %s", err)
 	}
 
-	storageConfig = storage.Configuration{}
+	storageConfig = storage.Configuration{
+		Url:    "",
+		Secret: "",
+	}
 	if err := viper.UnmarshalKey("db", &storageConfig); err != nil {
 		log.Fatalf("unable to read db configuration: %s", err)
+	}
+	if len(storageConfig.Url) == 0 {
+		log.Fatalf("configuration db.url required")
 	}
 
 	path := viper.GetString("path")
 	if len(path) == 0 {
-		log.Fatalf("path not defined")
+		log.Fatalf("configuration path required")
 	}
 
 	repositoryConfig = repository.Configuration{

@@ -202,6 +202,10 @@ var migrations = []Migration{
 		version: 25,
 		name:    "run_results.error field",
 		query:   `alter table run_results add column error text`,
+	}, {
+		version: 26,
+		name:    "store projects.repo_password as text",
+		query:   `alter table projects alter column repo_password type text`,
 	},
 }
 
