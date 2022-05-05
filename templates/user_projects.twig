@@ -11,20 +11,21 @@
 
     {% if projects %}
         <form method="post" action="/users/projects/{{user_control.Id}}" enctype="application/x-www-form-urlencoded" class="mt-3">
-            {% for projectInfo in projects %}
-                <div class="form-check">
-                    <input type="checkbox"
-                           class="form-check-input"
-                           name="projects[]"
-                           id="project-{{projectInfo.Project.Id}}"
-                           value="{{projectInfo.Project.Id}}"
-                           {% if projectInfo.Access %}checked{% endif %}
-                    >
-                    <label for="project-{{projectInfo.Project.Id}}" class="form-check-label">
+            <div class="list-group list-group-hover">
+                {% for projectInfo in projects %}
+                    <label class="list-group-item">
+                        <input type="checkbox"
+                               class="form-check-input"
+                               name="projects[]"
+                               id="project-{{projectInfo.Project.Id}}"
+                               value="{{projectInfo.Project.Id}}"
+                               {% if projectInfo.Access %}checked{% endif %}
+                        >
                         {{projectInfo.Project.Name}}
                     </label>
-                </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
+
             <hr>
             <div class="mb-3 mt-3 text-end">
                 <button type="submit" class="btn btn-primary">

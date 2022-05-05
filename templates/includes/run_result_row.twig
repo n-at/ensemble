@@ -1,14 +1,16 @@
 <div class="row">
     <div class="col-2 text-nowrap">
+        {% if results_link %}
+        {% endif %}
         {% if run.Result == 1 %}
             <span class="text-info text-nowrap">
                 <i class="bi bi-clock"></i> Running
             </span>
-            {% elif run.Result == 2 %}
+        {% elif run.Result == 2 %}
             <span class="text-success text-nowrap">
                 <i class="bi bi-check"></i> Finished
             </span>
-            {% elif run.Result == 3 %}
+        {% elif run.Result == 3 %}
             <span class="text-danger text-nowrap">
                 <i class="bi bi-x"></i> Error
             </span>
@@ -41,12 +43,11 @@
     </div>
     {% if results_link %}
         <div class="col-2 text-end">
-            <a href="/projects/playbooks/{{project.Id}}/runs/{{playbook.Id}}/result/{{run.Id}}"
-               class="btn btn-sm btn-outline-secondary"
-               title="Go to run result"
-            >
-                <i class="bi bi-arrow-right"></i>
-            </a>
+            <small>
+                <a href="/projects/playbooks/{{project.Id}}/runs/{{playbook.Id}}/result/{{run.Id}}">
+                    Result <i class="bi bi-chevron-right"></i>
+                </a>
+            </small>
         </div>
     {% else %}
         <div class="col-2 text-end">

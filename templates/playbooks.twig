@@ -11,7 +11,7 @@
     <h2>{{project.Name}}</h2>
 
     {% if playbooks %}
-        <ul class="list-group mb-3 mt-3">
+        <ul class="list-group list-group-hover mb-3 mt-3">
             {% for playbookInfo in playbooks %}
                 {% set playbook = playbookInfo.Playbook %}
                 {% set run = playbookInfo.Run %}
@@ -40,7 +40,7 @@
                                    class="btn btn-sm btn-outline-primary"
                                    title="Execute"
                                 >
-                                    <i class="bi bi-play-fill"></i>
+                                    <i class="bi bi-play-fill"></i> Execute
                                 </a>
                             {% endif %}
                             <div class="d-inline-block dropdown">
