@@ -123,7 +123,9 @@ func (r *Runner) Run(project *structures.Project, playbook *structures.Playbook,
 func (r *Runner) installCollection(name string) error {
 	command := fmt.Sprintf("ansible-galaxy collection install %s", shellescape.Quote(name))
 	cmd := exec.Command("/bin/bash", "-c", command)
-	return cmd.Run()
+	output, err := cmd.CombinedOutput()
+	log.Infof("collection %s installation log:\n%s", name, output)
+	return err
 }
 
 func (r *Runner) executePlaybook(runId string, project *structures.Project, playbook *structures.Playbook, mode int, vaultPasswordFile *os.File) (string, string, error) {
