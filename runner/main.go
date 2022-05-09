@@ -53,11 +53,13 @@ func (r *Runner) Run(project *structures.Project, playbook *structures.Playbook,
 	}
 
 	run := structures.PlaybookRun{
-		PlaybookId: playbook.Id,
-		UserId:     userId,
-		Mode:       mode,
-		StartTime:  time.Now(),
-		Result:     structures.PlaybookRunResultRunning,
+		PlaybookId:    playbook.Id,
+		UserId:        userId,
+		Mode:          mode,
+		StartTime:     time.Now(),
+		Result:        structures.PlaybookRunResultRunning,
+		InventoryFile: project.Inventory,
+		VariablesFile: project.Variables,
 	}
 	if err := r.store.PlaybookRunInsert(&run); err != nil {
 		return nil, err

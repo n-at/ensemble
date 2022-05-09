@@ -923,11 +923,25 @@ func (s *Storage) PlaybookLock(id string, value bool) error {
 ///////////////////////////////////////////////////////////////////////////////
 
 func scanPlaybookRun(s Scanner) (*structures.PlaybookRun, error) {
-	var run structures.PlaybookRun
-	if err := s.Scan(&run.Id, &run.PlaybookId, &run.UserId, &run.Mode, &run.StartTime, &run.FinishTime, &run.Result); err != nil {
+	var id, playbookId, userId, inventoryFile, variablesFile sql.NullString
+	var mode, result sql.NullInt32
+	var startTime, finishTime sql.NullTime
+
+	if err := s.Scan(&id, &playbookId, &userId, &mode, &startTime, &finishTime, &result, &inventoryFile, &variablesFile); err != nil {
 		return nil, err
 	}
-	return &run, nil
+
+	return &structures.PlaybookRun{
+		Id:            id.String,
+		PlaybookId:    playbookId.String,
+		UserId:        userId.String,
+		Mode:          int(mode.Int32),
+		StartTime:     startTime.Time,
+		FinishTime:    finishTime.Time,
+		Result:        int(result.Int32),
+		InventoryFile: inventoryFile.String,
+		VariablesFile: variablesFile.String,
+	}, nil
 }
 
 func (s *Storage) PlaybookRunGet(id string) (*structures.PlaybookRun, error) {
@@ -937,7 +951,9 @@ func (s *Storage) PlaybookRunGet(id string) (*structures.PlaybookRun, error) {
                      mode, 
                      start_time, 
                      finish_time, 
-                     result 
+                     result,
+                     inventory_file,
+                     variables_file
               from playbook_runs 
               where id = $1 
                 and not coalesce(deleted, false)`
@@ -957,7 +973,9 @@ func (s *Storage) PlaybookRunGetLatest(playbookId string) (*structures.PlaybookR
                      mode, 
                      start_time, 
                      finish_time, 
-                     result 
+                     result,
+                     inventory_file,
+                     variables_file
               from playbook_runs 
               where playbook_id = $1 
                 and not coalesce(deleted, false)
@@ -979,7 +997,9 @@ func (s *Storage) PlaybookRunGetByPlaybook(playbookId string) ([]*structures.Pla
                      mode, 
                      start_time, 
                      finish_time, 
-                     result 
+                     result,
+                     inventory_file,
+                     variables_file
               from playbook_runs 
               where playbook_id = $1 
                 and not coalesce(deleted, false)
@@ -1019,8 +1039,8 @@ func (s *Storage) PlaybookRunInsert(run *structures.PlaybookRun) error {
 		run.Id = NewId()
 	}
 
-	query := `insert into playbook_runs (id, playbook_id, user_id, mode, start_time, finish_time, result)
-              values ($1, $2, $3, $4, $5, $6, $7)`
+	query := `insert into playbook_runs (id, playbook_id, user_id, mode, start_time, finish_time, result, inventory_file, variables_file)
+              values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`
 
 	_, err := s.db.Exec(
 		query,
@@ -1030,7 +1050,9 @@ func (s *Storage) PlaybookRunInsert(run *structures.PlaybookRun) error {
 		run.Mode,
 		run.StartTime,
 		run.FinishTime,
-		run.Result)
+		run.Result,
+		run.InventoryFile,
+		run.VariablesFile)
 	return err
 }
 
@@ -1067,10 +1089,12 @@ func (s *Storage) PlaybookRunUpdate(run *structures.PlaybookRun) error {
                   start_time = $2, 
                   finish_time = $3, 
                   result = $4, 
-                  deleted = false 
-              where id = $5`
+                  deleted = false,
+                  inventory_file = $5,
+                  variables_file = $6
+              where id = $7`
 
-	_, err = s.db.Exec(query, run.Mode, run.StartTime, run.FinishTime, run.Result, run.Id)
+	_, err = s.db.Exec(query, run.Mode, run.StartTime, run.FinishTime, run.Result, run.InventoryFile, run.VariablesFile, run.Id)
 	return err
 }
 

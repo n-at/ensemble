@@ -206,6 +206,14 @@ var migrations = []Migration{
 		version: 26,
 		name:    "store projects.repo_password as text",
 		query:   `alter table projects alter column repo_password type text`,
+	}, {
+		version: 27,
+		name:    "playbook_runs.inventory_file field",
+		query:   `alter table playbook_runs add column inventory_file text`,
+	}, {
+		version: 28,
+		name:    "playbook_runs.variables_file field",
+		query:   `alter table playbook_runs add column variables_file text`,
 	},
 }
 
