@@ -157,6 +157,7 @@ func (r *Runner) executePlaybook(runId string, project *structures.Project, play
 	cmd := exec.Command("/bin/bash", "-c", command.String())
 	cmd.Dir = fmt.Sprintf("%s/%s", r.config.Path, project.Id)
 	cmd.Env = append(cmd.Env, "ANSIBLE_STDOUT_CALLBACK=ansible.posix.json")
+	cmd.Env = append(cmd.Env, "SSH_AUTH_SOCK=/app/ssh-agent.sock")
 
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
