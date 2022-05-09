@@ -1188,15 +1188,21 @@ func (s *Storage) RunResultDelete(id string) error {
 //Keys
 ///////////////////////////////////////////////////////////////////////////////
 
-func scanKey(s Scanner) (*structures.Key, error) {
+func (s *Storage) scanKey(scanner Scanner) (*structures.Key, error) {
 	var id, name, password sql.NullString
-	if err := s.Scan(&id, &name, &password); err != nil {
+	if err := scanner.Scan(&id, &name, &password); err != nil {
 		return nil, err
 	}
+
+	passwordDecrypted, err := DecryptString(s.config.Secret, password.String)
+	if err != nil {
+		return nil, err
+	}
+
 	return &structures.Key{
 		Id:       id.String,
 		Name:     name.String,
-		Password: password.String,
+		Password: passwordDecrypted,
 	}, nil
 }
 
@@ -1214,7 +1220,7 @@ func (s *Storage) KeyGetAll() ([]*structures.Key, error) {
 	var keys []*structures.Key
 
 	for rows.Next() {
-		key, err := scanKey(rows)
+		key, err := s.scanKey(rows)
 		if err != nil {
 			log.Warnf("unable to read key: %s", err)
 			continue
@@ -1237,7 +1243,7 @@ func (s *Storage) KeyGet(id string) (*structures.Key, error) {
 		return nil, err
 	}
 
-	return scanKey(row)
+	return s.scanKey(row)
 }
 
 func (s *Storage) KeyInsert(key *structures.Key) error {
@@ -1253,7 +1259,12 @@ func (s *Storage) KeyInsert(key *structures.Key) error {
 
 	query := `insert into keys (id, name, password) values ($1, $2, $3)`
 
-	_, err := s.db.Exec(query, key.Id, key.Name, key.Password)
+	passwordEncrypted, err := EncryptString(s.config.Secret, key.Password)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.Exec(query, key.Id, key.Name, passwordEncrypted)
 	return err
 }
 
