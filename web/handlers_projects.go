@@ -29,7 +29,7 @@ func (s *Server) projects(c echo.Context) error {
 		projects, err = s.store.ProjectGetByUser(context.user.Id)
 	}
 	if err != nil {
-		log.Warnf("unable to get projects: %s", err)
+		log.Warnf("projects get error: %s", err)
 		return err
 	}
 
@@ -37,7 +37,7 @@ func (s *Server) projects(c echo.Context) error {
 	for _, project := range projects {
 		update, err := s.store.ProjectUpdateGetProjectLatest(project.Id)
 		if err != nil {
-			log.Warnf("unable to get latest project update %s: %s", project.Id, err)
+			log.Warnf("projects project %s latest update get error: %s", project.Id, err)
 			update = nil
 		}
 		projectsWithInfo = append(projectsWithInfo, &projectInfo{
@@ -88,6 +88,7 @@ func (s *Server) projectNewSubmit(c echo.Context) error {
 		project.RepositoryBranch = structures.ProjectDefaultBranchName
 	}
 	if err != nil {
+		log.Errorf("projectNewSubmit error: %s", err)
 		return c.Render(http.StatusOK, "templates/project_new.twig", pongo2.Context{
 			"user":    context.user,
 			"project": project,
@@ -97,7 +98,7 @@ func (s *Server) projectNewSubmit(c echo.Context) error {
 
 	err = s.store.ProjectInsert(project)
 	if err != nil {
-		log.Warnf("projectNewSubmit unable to save project: %s", err)
+		log.Errorf("projectNewSubmit unable to save project: %s", err)
 		return c.Render(http.StatusOK, "templates/project_new.twig", pongo2.Context{
 			"user":    context.user,
 			"project": project,
@@ -126,6 +127,8 @@ func (s *Server) projectEditForm(c echo.Context) error {
 //projectEditSubmit Save changed project data
 func (s *Server) projectEditSubmit(c echo.Context) error {
 	context := c.(*EnsembleContext)
+
+	log.Infof("projectEditSubmit %s", context.playbook.Id)
 
 	project := context.project
 
@@ -184,6 +187,7 @@ func (s *Server) projectEditSubmit(c echo.Context) error {
 	}
 
 	if err != nil {
+		log.Errorf("projectEditSubmit project %s error: %s", context.project.Id, err)
 		return c.Render(http.StatusOK, "templates/project_edit.twig", pongo2.Context{
 			"user":    context.user,
 			"project": project,
@@ -193,7 +197,7 @@ func (s *Server) projectEditSubmit(c echo.Context) error {
 
 	err = s.store.ProjectUpdate(project)
 	if err != nil {
-		log.Warnf("projectEditSubmit unable to update project: %s", err)
+		log.Errorf("projectEditSubmit unable to update project: %s", err)
 		return c.Render(http.StatusOK, "templates/project_edit.twig", pongo2.Context{
 			"user":    context.user,
 			"project": project,
@@ -218,8 +222,11 @@ func (s *Server) projectDeleteForm(c echo.Context) error {
 func (s *Server) projectDeleteSubmit(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
+	log.Infof("projectDeleteSubmit %s", context.project.Id)
+
 	err := s.store.ProjectDelete(context.project.Id)
 	if err != nil {
+		log.Errorf("projectDeleteSubmit project %s delete error: %s", context.project.Id, err)
 		return err
 	}
 
@@ -230,8 +237,11 @@ func (s *Server) projectDeleteSubmit(c echo.Context) error {
 func (s *Server) projectUpdate(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
+	log.Infof("projectUpdate %s", context.project.Id)
+
 	err := s.manager.Update(context.project)
 	if err != nil {
+		log.Errorf("projectUpdate project %s update error: %s", context.project.Id, err)
 		return err
 	}
 

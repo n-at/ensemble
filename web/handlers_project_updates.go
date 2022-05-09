@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/flosch/pongo2/v4"
 	"github.com/labstack/echo/v4"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -12,6 +13,7 @@ func (s *Server) projectUpdates(c echo.Context) error {
 
 	updates, err := s.store.ProjectUpdateGetByProject(context.project.Id)
 	if err != nil {
+		log.Infof("projectUpdates project %s updates get error: %s", context.project.Id, err)
 		return err
 	}
 
@@ -45,10 +47,15 @@ func (s *Server) projectUpdateDeleteForm(c echo.Context) error {
 func (s *Server) projectUpdateDeleteSubmit(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
+	log.Infof("projectUpdateDeleteSubmit %s", context.projectUpdate.Id)
+
 	err := s.store.ProjectUpdateDelete(context.projectUpdate.Id)
 	if err != nil {
+		log.Errorf("projectUpdateDeleteSubmit project update %s delete error: %s", context.projectUpdate.Id, err)
 		return err
 	}
 
-	return c.Redirect(http.StatusFound, fmt.Sprintf("/projects/updates/%s", context.project.Id))
+	returnUrl := fmt.Sprintf("/projects/updates/%s", context.project.Id)
+
+	return c.Redirect(http.StatusFound, returnUrl)
 }

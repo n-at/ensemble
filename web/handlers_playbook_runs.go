@@ -15,6 +15,7 @@ func (s *Server) playbookRuns(c echo.Context) error {
 
 	runs, err := s.store.PlaybookRunGetByPlaybook(context.playbook.Id)
 	if err != nil {
+		log.Errorf("playbookRuns playbook %s runs get error: %s", context.playbook.Id, err)
 		return err
 	}
 
@@ -37,16 +38,16 @@ func (s *Server) playbookRunResult(c echo.Context) error {
 	if err == nil {
 		ansibleResult = &structures.AnsibleExecution{}
 		if err := json.Unmarshal([]byte(runResult.Output), ansibleResult); err != nil {
-			log.Warnf("unable to unmarshal run result for %s: %s", context.playbookRun.Id, err)
+			log.Warnf("playbookRunResult playbook run %s unmarshal error: %s", context.playbookRun.Id, err)
 			ansibleResult = nil
 		}
 	} else {
-		log.Warnf("unable to get run result for %s: %s", context.playbookRun.Id, err)
+		log.Warnf("playbookRunResult playbook run %s get result error: %s", context.playbookRun.Id, err)
 	}
 
 	runUser, err = s.store.UserGet(context.playbookRun.UserId)
 	if err != nil {
-		log.Warnf("unable to get run user for %s: %s", context.playbookRun.Id, err)
+		log.Warnf("playbookRunResult playbook run %s get user error: %s", context.playbookRun.Id, err)
 	}
 
 	return c.Render(http.StatusOK, "templates/playbook_run_result.twig", pongo2.Context{
@@ -74,13 +75,16 @@ func (s *Server) playbookRunDeleteForm(c echo.Context) error {
 func (s *Server) playbookRunDeleteSubmit(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
+	log.Infof("playbookRunDeleteSubmit %s", context.playbookRun.Id)
+
 	if err := s.store.PlaybookRunDelete(context.playbookRun.Id); err != nil {
+		log.Errorf("playbookRunDeleteSubmit playbook run %s delete error: %s", context.playbookRun.Id, err)
 		return err
 	}
 
-	url := fmt.Sprintf("/projects/playbooks/%s/runs/%s", context.project.Id, context.playbook.Id)
+	returnUrl := fmt.Sprintf("/projects/playbooks/%s/runs/%s", context.project.Id, context.playbook.Id)
 
-	return c.Redirect(http.StatusFound, url)
+	return c.Redirect(http.StatusFound, returnUrl)
 }
 
 func (s *Server) playbookRunStatus(c echo.Context) error {
@@ -91,7 +95,10 @@ func (s *Server) playbookRunStatus(c echo.Context) error {
 func (s *Server) playbookRunTerminate(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
+	log.Infof("playbookRunTerminate %s", context.playbookRun.Id)
+
 	if err := s.runner.TerminatePlaybook(context.playbookRun.Id); err != nil {
+		log.Errorf("playbookRunTerminate playbook run %s termination error: %s", context.playbookRun.Id, err)
 		return err
 	}
 
