@@ -87,3 +87,15 @@ func (s *Server) playbookRunStatus(c echo.Context) error {
 	context := c.(*EnsembleContext)
 	return c.JSON(http.StatusOK, context.playbookRun.Result)
 }
+
+func (s *Server) playbookRunTerminate(c echo.Context) error {
+	context := c.(*EnsembleContext)
+
+	if err := s.runner.TerminatePlaybook(context.playbookRun.Id); err != nil {
+		return err
+	}
+
+	returnUrl := fmt.Sprintf("/projects/playbooks/%s/runs/%s/result/%s", context.project.Id, context.playbook.Id, context.playbookRun.Id)
+
+	return c.Redirect(http.StatusFound, returnUrl)
+}

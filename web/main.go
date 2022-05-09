@@ -129,6 +129,10 @@ func New(configuration Configuration, store *storage.Storage, manager *repositor
 	playbookRunStatus.Use(s.playbookRunRequiredMiddleware)
 	playbookRunStatus.GET("/:playbook_run_id", s.playbookRunStatus)
 
+	playbookRunTerminate := playbookRuns.Group("/terminate")
+	playbookRunTerminate.Use(s.playbookRunRequiredMiddleware)
+	playbookRunTerminate.POST("/:playbook_run_id", s.playbookRunTerminate)
+
 	//users
 	users := s.e.Group("/users")
 	users.Use(s.authenticationRequiredMiddleware)

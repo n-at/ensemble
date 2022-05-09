@@ -52,19 +52,20 @@
 
     {% if run.Result == 1 %}
         <div class="mb-3">
-            <div class="spinner">
-                <div class="rect1"></div>
-                <div class="rect2"></div>
-                <div class="rect3"></div>
-                <div class="rect4"></div>
-                <div class="rect5"></div>
-            </div>
+            {% include "includes/spinner.twig" %}
             <div id="running-status"
-                 class="text-center"
+                 class="text-center mb-3"
                  data-status-url="/projects/playbooks/{{project.Id}}/runs/{{playbook.Id}}/status/{{run.Id}}"
             >
                 Running...
             </div>
+            <form method="post" action="/projects/playbooks/{{project.Id}}/runs/{{playbook.Id}}/terminate/{{run.Id}}" enctype="application/x-www-form-urlencoded">
+                <div class="text-center mb-3">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                        Terminate
+                    </button>
+                </div>
+            </form>
             <script src="/assets/running.js"></script>
         </div>
     {% endif %}

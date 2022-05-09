@@ -4,18 +4,21 @@ import (
 	"bytes"
 	"ensemble/storage"
 	"ensemble/storage/structures"
+	"errors"
 	"fmt"
 	"github.com/alessio/shellescape"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
 	"strings"
+	"syscall"
 	"time"
 )
 
 type Runner struct {
-	config Configuration
-	store  *storage.Storage
+	config    Configuration
+	store     *storage.Storage
+	processes map[string]*exec.Cmd
 }
 
 type Configuration struct {
@@ -26,8 +29,9 @@ type Configuration struct {
 
 func New(config Configuration, store *storage.Storage) *Runner {
 	return &Runner{
-		config: config,
-		store:  store,
+		config:    config,
+		store:     store,
+		processes: make(map[string]*exec.Cmd),
 	}
 }
 
@@ -75,7 +79,7 @@ func (r *Runner) Run(project *structures.Project, playbook *structures.Playbook,
 			}
 		}()
 
-		stdout, stderr, err := r.executePlaybook(project, playbook, mode)
+		stdout, stderr, err := r.executePlaybook(run.Id, project, playbook, mode)
 		if err != nil {
 			log.Warnf("playbook run %s failed: %s", run.Id, err)
 			run.Result = structures.PlaybookRunResultFailure
@@ -111,7 +115,7 @@ func (r *Runner) installCollection(name string) error {
 	return cmd.Run()
 }
 
-func (r *Runner) executePlaybook(project *structures.Project, playbook *structures.Playbook, mode int) (string, string, error) {
+func (r *Runner) executePlaybook(runId string, project *structures.Project, playbook *structures.Playbook, mode int) (string, string, error) {
 	command := strings.Builder{}
 	command.WriteString("ansible-playbook")
 
@@ -145,7 +149,24 @@ func (r *Runner) executePlaybook(project *structures.Project, playbook *structur
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
+	r.processes[runId] = cmd
+
 	err := cmd.Run()
 
+	delete(r.processes, runId)
+
 	return stdout.String(), stderr.String(), err
+}
+
+func (r *Runner) TerminatePlaybook(runId string) error {
+	cmd, ok := r.processes[runId]
+	if !ok {
+		return errors.New("playbook run process not found")
+	}
+
+	if err := cmd.Process.Signal(syscall.SIGINT); err != nil {
+		return err
+	}
+
+	return nil
 }
