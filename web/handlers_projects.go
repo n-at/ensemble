@@ -128,7 +128,7 @@ func (s *Server) projectEditForm(c echo.Context) error {
 func (s *Server) projectEditSubmit(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
-	log.Infof("projectEditSubmit %s", context.playbook.Id)
+	log.Infof("projectEditSubmit %s", context.project.Id)
 
 	project := context.project
 
