@@ -310,7 +310,15 @@ func (m *Manager) projectCollections(p *structures.Project) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return strings.Split(string(bytes), "\n"), nil
+
+	var collections []string
+	for _, collection := range strings.Split(string(bytes), "\n") {
+		if len(strings.TrimSpace(collection)) != 0 {
+			collections = append(collections, collection)
+		}
+	}
+
+	return collections, nil
 }
 
 func (m *Manager) projectVariables(p *structures.Project) ([]string, error) {
