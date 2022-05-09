@@ -214,6 +214,15 @@ var migrations = []Migration{
 		version: 28,
 		name:    "playbook_runs.variables_file field",
 		query:   `alter table playbook_runs add column variables_file text`,
+	}, {
+		version: 29,
+		name:    "keys table",
+		query: `create table keys (
+			id       varchar(64) primary key,
+			deleted  boolean,
+			name     text        not null,
+			password text
+		)`,
 	},
 }
 

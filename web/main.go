@@ -1,6 +1,7 @@
 package web
 
 import (
+	"ensemble/privatekeys"
 	"ensemble/repository"
 	"ensemble/runner"
 	"ensemble/storage"
@@ -20,15 +21,16 @@ type Configuration struct {
 }
 
 type Server struct {
-	e       *echo.Echo
-	store   *storage.Storage
-	manager *repository.Manager
-	runner  *runner.Runner
+	e          *echo.Echo
+	store      *storage.Storage
+	manager    *repository.Manager
+	runner     *runner.Runner
+	keyManager *privatekeys.KeyManager
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-func New(configuration Configuration, store *storage.Storage, manager *repository.Manager, runner *runner.Runner) *Server {
+func New(configuration Configuration, store *storage.Storage, manager *repository.Manager, runner *runner.Runner, keyManager *privatekeys.KeyManager) *Server {
 	e := echo.New()
 
 	e.HideBanner = true
@@ -37,10 +39,11 @@ func New(configuration Configuration, store *storage.Storage, manager *repositor
 	e.Static("/assets", "assets")
 
 	s := &Server{
-		e:       e,
-		store:   store,
-		manager: manager,
-		runner:  runner,
+		e:          e,
+		store:      store,
+		manager:    manager,
+		runner:     runner,
+		keyManager: keyManager,
 	}
 
 	s.e.Use(s.contextCustomizationMiddleware)
@@ -155,6 +158,19 @@ func New(configuration Configuration, store *storage.Storage, manager *repositor
 	usersProjects.Use(s.userControlRequiredMiddleware)
 	usersProjects.GET("", s.userProjectsForm)
 	usersProjects.POST("", s.userProjectsSubmit)
+
+	//keys
+	keys := s.e.Group("/keys")
+	keys.Use(s.authenticationRequiredMiddleware)
+	keys.Use(s.keyAccessRequiredMiddleware)
+	keys.GET("", s.keys)
+	keys.GET("/new", s.keyNewForm)
+	keys.POST("/new", s.keyNewSubmit)
+
+	keysDelete := keys.Group("/delete")
+	keysDelete.Use(s.keyRequiredMiddleware)
+	keysDelete.GET("/:key_id", s.keyDeleteForm)
+	keysDelete.POST("/:key_id", s.keyDeleteSubmit)
 
 	return s
 }

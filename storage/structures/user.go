@@ -31,3 +31,7 @@ func (u *User) CanLockPlaybooks() bool {
 func (u *User) CanControlUsers() bool {
 	return u.Role == UserRoleAdmin
 }
+
+func (u *User) CanControlKeys() bool {
+	return u.Role == UserRoleAdmin
+}

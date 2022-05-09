@@ -1183,3 +1183,82 @@ func (s *Storage) RunResultDelete(id string) error {
 	_, err := s.db.Exec(query, id)
 	return err
 }
+
+///////////////////////////////////////////////////////////////////////////////
+//Keys
+///////////////////////////////////////////////////////////////////////////////
+
+func scanKey(s Scanner) (*structures.Key, error) {
+	var id, name, password sql.NullString
+	if err := s.Scan(&id, &name, &password); err != nil {
+		return nil, err
+	}
+	return &structures.Key{
+		Id:       id.String,
+		Name:     name.String,
+		Password: password.String,
+	}, nil
+}
+
+func (s *Storage) KeyGetAll() ([]*structures.Key, error) {
+	query := `select id, name, password
+	          from keys 
+	          where not coalesce(deleted, false) 
+	          order by name`
+	rows, err := s.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var keys []*structures.Key
+
+	for rows.Next() {
+		key, err := scanKey(rows)
+		if err != nil {
+			log.Warnf("unable to read key: %s", err)
+			continue
+		}
+		keys = append(keys, key)
+	}
+
+	return keys, nil
+}
+
+func (s *Storage) KeyGet(id string) (*structures.Key, error) {
+	query := `select id, name, password
+	          from keys 
+	          where id = $1 and 
+				not coalesce(deleted, false) 
+	          order by name`
+
+	row := s.db.QueryRow(query, id)
+	if err := row.Err(); err != nil {
+		return nil, err
+	}
+
+	return scanKey(row)
+}
+
+func (s *Storage) KeyInsert(key *structures.Key) error {
+	if key == nil {
+		return errors.New("key insert nil")
+	}
+	if len(key.Name) == 0 {
+		return errors.New("key insert empty name")
+	}
+	if len(key.Id) == 0 {
+		key.Id = NewId()
+	}
+
+	query := `insert into keys (id, name, password) values ($1, $2, $3)`
+
+	_, err := s.db.Exec(query, key.Id, key.Name, key.Password)
+	return err
+}
+
+func (s *Storage) KeyDelete(id string) error {
+	query := `update keys set deleted = true where id = $1`
+	_, err := s.db.Exec(query, id)
+	return err
+}

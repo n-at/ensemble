@@ -13,5 +13,13 @@ db:
 #Directory to store project repositories
 path: "data"
 
+keys:
+  #Directory to store private keys
+  path: "keys"
+  #SSH_ASKPASS script
+  addKeyScript: "./ssh_add_key.sh"
+  #Override SSH_AUTH_SOCK of ssh-agent
+  authSock: ""
+
 #Projects update schedule (cron)
 update: "0 3 * * *"

@@ -1,0 +1,23 @@
+{% extends "includes/layout.twig" %}
+
+{% block title %}
+    Delete private key - ensemble
+{% endblock %}
+
+{% block content %}
+
+    <h1>Delete private key</h1>
+
+    <form method="post" action="/keys/delete/{{key.Id}}" enctype="application/x-www-form-urlencoded">
+        <p class="lead">
+            Confirm deletion of private key &quot;{{key.Name}}&quot;
+        </p>
+        <hr>
+        <div class="mb-3 text-end">
+            <button type="submit" class="btn btn-danger">
+                Delete key
+            </button>
+        </div>
+    </form>
+
+{% endblock %}

@@ -16,6 +16,7 @@ type EnsembleContext struct {
 	playbook      *structures.Playbook
 	playbookRun   *structures.PlaybookRun
 	userControl   *structures.User
+	key           *structures.Key
 }
 
 func (c *EnsembleContext) GetSessionId() string {

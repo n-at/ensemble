@@ -232,3 +232,42 @@ func (s *Server) userControlRequiredMiddleware(next echo.HandlerFunc) echo.Handl
 		return next(context)
 	}
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+func (s *Server) keyAccessRequiredMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		context := c.(*EnsembleContext)
+
+		if context.user == nil {
+			return errors.New("auth required")
+		}
+		if !context.user.CanControlKeys() {
+			return errors.New("keys access denied")
+		}
+
+		return next(c)
+	}
+}
+
+func (s *Server) keyRequiredMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		context := c.(*EnsembleContext)
+
+		keyId := c.Param("key_id")
+		if len(keyId) == 0 {
+			return errors.New("key id required")
+		}
+		key, err := s.store.KeyGet(keyId)
+		if err != nil {
+			return err
+		}
+		if key == nil {
+			return errors.New("key not found")
+		}
+
+		context.key = key
+
+		return next(context)
+	}
+}
