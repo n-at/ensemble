@@ -83,6 +83,11 @@ func (r *Runner) Run(project *structures.Project, playbook *structures.Playbook,
 			if err := r.store.PlaybookLock(playbook.Id, false); err != nil {
 				log.Warnf("playbook %s unlock failed: %s", playbook.Id, err)
 			}
+			if project.VariablesVault {
+				if err := os.Remove(vaultPasswordFile.Name()); err != nil {
+					log.Warnf("vault password file remove error %s: %s", run.Id, err)
+				}
+			}
 		}()
 
 		stdout, stderr, err := r.executePlaybook(run.Id, project, playbook, mode, vaultPasswordFile)
@@ -107,12 +112,6 @@ func (r *Runner) Run(project *structures.Project, playbook *structures.Playbook,
 		}
 		if err := r.store.RunResultInsert(&runResult); err != nil {
 			log.Warnf("playbook run result %s insert failed: %s", runResult.Id, err)
-		}
-
-		if project.VariablesVault {
-			if err := os.Remove(vaultPasswordFile.Name()); err != nil {
-				log.Warnf("vault password file remove error %s: %s", run.Id, err)
-			}
 		}
 	}()
 
