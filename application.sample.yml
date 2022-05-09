@@ -2,12 +2,14 @@
 web:
   #Address to listen
   listen: ":3000"
+  #Disable caching of templates
   debugTemplates: false
 
 db:
   #PostgreSQL connection string
   url: "postgres://ensemble:ensemble@localhost:5432/ensemble?sslmode=disable"
   #Passwords and keys encryption secret (random string)
+  #When empty passwords will be stored as plain text
   secret: ""
 
 #Directory to store project repositories

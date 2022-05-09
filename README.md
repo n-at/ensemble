@@ -2,6 +2,22 @@
 
 Web service for [ansible](https://www.ansible.com/) playbooks execution. 
 
+## Building
+
+Go 1.18+ and npm 7+ required.
+
+```bash
+cd assets
+npm install
+cd ..
+go build -a -o app
+```
+
+## Configuration 
+
+Configuration stored in `application.yml` file.
+See `application.sample.yml` for example configuration.
+
 ## Repository file structure
 
 ensemble requires opinionated playbook repository structure:
