@@ -70,7 +70,7 @@ func (k *KeyManager) DeleteKeyFile(name string) error {
 
 func (k *KeyManager) AddKey(key *structures.Key) error {
 	command := fmt.Sprintf("ssh-add %s <<< %s", shellescape.Quote(k.keyPath(key.Name)), shellescape.Quote(key.Password))
-	cmd := exec.Command("sh", "-c", command)
+	cmd := exec.Command("/bin/bash", "-c", command)
 
 	cmd.Env = append(cmd.Env, "DISPLAY=\":0\"")
 
