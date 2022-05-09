@@ -536,7 +536,7 @@ func fileExists(file string) (bool, error) {
 }
 
 func (m *Manager) executeCommand(command, directory string) (*result, error) {
-	cmd := exec.Command("sh", "-c", command)
+	cmd := exec.Command("/bin/bash", "-c", command)
 	cmd.Dir = directory
 
 	output, err := cmd.CombinedOutput()

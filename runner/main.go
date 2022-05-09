@@ -122,7 +122,7 @@ func (r *Runner) Run(project *structures.Project, playbook *structures.Playbook,
 
 func (r *Runner) installCollection(name string) error {
 	command := fmt.Sprintf("ansible-galaxy collection install %s", shellescape.Quote(name))
-	cmd := exec.Command("sh", "-c", command)
+	cmd := exec.Command("/bin/bash", "-c", command)
 	return cmd.Run()
 }
 
@@ -152,7 +152,7 @@ func (r *Runner) executePlaybook(runId string, project *structures.Project, play
 	command.WriteString(" ")
 	command.WriteString(shellescape.Quote(playbook.Filename))
 
-	cmd := exec.Command("sh", "-c", command.String())
+	cmd := exec.Command("/bin/bash", "-c", command.String())
 	cmd.Dir = fmt.Sprintf("%s/%s", r.config.Path, project.Id)
 	cmd.Env = append(cmd.Env, "ANSIBLE_STDOUT_CALLBACK=ansible.posix.json")
 
