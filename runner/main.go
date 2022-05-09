@@ -49,9 +49,15 @@ func (r *Runner) Run(project *structures.Project, playbook *structures.Playbook,
 			return nil, err
 		}
 	}
+
+	var vaultPasswordFile *os.File
 	if project.VariablesVault {
-		vaultPasswordFilePath := fmt.Sprintf("%s/%s/__vault_password__", r.config.Path, project.Id)
-		if err := os.WriteFile(vaultPasswordFilePath, []byte(project.VaultPassword), 0666); err != nil {
+		var err error
+		vaultPasswordFile, err = os.CreateTemp("", storage.NewId())
+		if err != nil {
+			return nil, err
+		}
+		if err := os.WriteFile(vaultPasswordFile.Name(), []byte(project.VaultPassword), 0600); err != nil {
 			return nil, err
 		}
 	}
@@ -79,7 +85,7 @@ func (r *Runner) Run(project *structures.Project, playbook *structures.Playbook,
 			}
 		}()
 
-		stdout, stderr, err := r.executePlaybook(run.Id, project, playbook, mode)
+		stdout, stderr, err := r.executePlaybook(run.Id, project, playbook, mode, vaultPasswordFile)
 		if err != nil {
 			log.Warnf("playbook run %s failed: %s", run.Id, err)
 			run.Result = structures.PlaybookRunResultFailure
@@ -102,6 +108,12 @@ func (r *Runner) Run(project *structures.Project, playbook *structures.Playbook,
 		if err := r.store.RunResultInsert(&runResult); err != nil {
 			log.Warnf("playbook run result %s insert failed: %s", runResult.Id, err)
 		}
+
+		if project.VariablesVault {
+			if err := os.Remove(vaultPasswordFile.Name()); err != nil {
+				log.Warnf("vault password file remove error %s: %s", run.Id, err)
+			}
+		}
 	}()
 
 	return &run, nil
@@ -115,7 +127,7 @@ func (r *Runner) installCollection(name string) error {
 	return cmd.Run()
 }
 
-func (r *Runner) executePlaybook(runId string, project *structures.Project, playbook *structures.Playbook, mode int) (string, string, error) {
+func (r *Runner) executePlaybook(runId string, project *structures.Project, playbook *structures.Playbook, mode int, vaultPasswordFile *os.File) (string, string, error) {
 	command := strings.Builder{}
 	command.WriteString("ansible-playbook")
 
@@ -128,7 +140,7 @@ func (r *Runner) executePlaybook(runId string, project *structures.Project, play
 
 	if project.VariablesVault {
 		command.WriteString(fmt.Sprintf(" --extra-vars %s", shellescape.Quote("@vars/vault.yml")))
-		command.WriteString(fmt.Sprintf(" --vault-password-file __vault_password__"))
+		command.WriteString(fmt.Sprintf(" --vault-password-file %s", shellescape.Quote(vaultPasswordFile.Name())))
 	}
 	if project.VariablesMain {
 		command.WriteString(fmt.Sprintf(" --extra-vars %s", shellescape.Quote("@vars/main.yml")))

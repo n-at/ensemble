@@ -38,8 +38,6 @@ Default inventory file is `main.yml`, other files will be treated as alternative
 when exists always included in playbook run (requires vault password in project settings) 
 * other YAML files will be treated as alternatives - can be included after `vault.yml` and `main.yml` to override variables defined there 
 
-It is recommended to add `__vault_password__` file to `.gitignore`.
-
 `collections.txt` contains names of custom [collections](https://docs.ansible.com/ansible/latest/user_guide/collections_using.html) to install with ansible galaxy before playbook run.
 
 YAML files in root will be treated as ansible [playbooks](https://docs.ansible.com/ansible/latest/user_guide/playbooks_intro.html).
