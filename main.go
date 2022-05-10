@@ -54,6 +54,18 @@ func init() {
 		log.Fatalf("configuration db.url required")
 	}
 
+	keyManagerConfig = privatekeys.Configuration{
+		Path:         "",
+		AddKeyScript: "./ssh_add_key.sh",
+		AuthSock:     "",
+	}
+	if err := viper.UnmarshalKey("keys", &keyManagerConfig); err != nil {
+		log.Fatalf("unable to read key manager configuration: %s", err)
+	}
+	if len(keyManagerConfig.Path) == 0 {
+		log.Fatalf("configuration keys.path required")
+	}
+
 	path := viper.GetString("path")
 	if len(path) == 0 {
 		log.Fatalf("configuration path required")
@@ -63,18 +75,8 @@ func init() {
 		Path: path,
 	}
 	runnerConfig = runner.Configuration{
-		Path: path,
-	}
-
-	keyManagerConfig = privatekeys.Configuration{
-		Path:         "",
-		AddKeyScript: "./ssh_add_key.sh",
-	}
-	if err := viper.UnmarshalKey("keys", &keyManagerConfig); err != nil {
-		log.Fatalf("unable to read key manager configuration: %s", err)
-	}
-	if len(keyManagerConfig.Path) == 0 {
-		log.Fatalf("configuration keys.path required")
+		Path:     path,
+		AuthSock: keyManagerConfig.AuthSock,
 	}
 }
 

@@ -22,7 +22,8 @@ type Runner struct {
 }
 
 type Configuration struct {
-	Path string
+	Path     string
+	AuthSock string
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -118,6 +119,19 @@ func (r *Runner) Run(project *structures.Project, playbook *structures.Playbook,
 	return &run, nil
 }
 
+func (r *Runner) TerminatePlaybook(runId string) error {
+	cmd, ok := r.processes[runId]
+	if !ok {
+		return errors.New("playbook run process not found")
+	}
+
+	if err := cmd.Process.Signal(syscall.SIGINT); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 func (r *Runner) installCollection(name string) error {
@@ -157,7 +171,7 @@ func (r *Runner) executePlaybook(runId string, project *structures.Project, play
 	cmd := exec.Command("/bin/bash", "-c", command.String())
 	cmd.Dir = fmt.Sprintf("%s/%s", r.config.Path, project.Id)
 	cmd.Env = append(cmd.Env, "ANSIBLE_STDOUT_CALLBACK=ansible.posix.json")
-	cmd.Env = append(cmd.Env, "SSH_AUTH_SOCK=/app/ssh-agent.sock")
+	r.sshAuthSock(cmd)
 
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
@@ -172,15 +186,17 @@ func (r *Runner) executePlaybook(runId string, project *structures.Project, play
 	return stdout.String(), stderr.String(), err
 }
 
-func (r *Runner) TerminatePlaybook(runId string) error {
-	cmd, ok := r.processes[runId]
-	if !ok {
-		return errors.New("playbook run process not found")
+func (r *Runner) sshAuthSock(cmd *exec.Cmd) {
+	sock := ""
+
+	if len(r.config.AuthSock) != 0 {
+		sock = r.config.AuthSock
+	} else if len(os.Getenv("SSH_AUTH_SOCK")) != 0 {
+		sock = os.Getenv("SSH_AUTH_SOCK")
 	}
 
-	if err := cmd.Process.Signal(syscall.SIGINT); err != nil {
-		return err
+	if len(sock) != 0 {
+		sock = fmt.Sprintf("SSH_AUTH_SOCK=%s", shellescape.Quote(sock))
+		cmd.Env = append(cmd.Env, sock)
 	}
-
-	return nil
 }
