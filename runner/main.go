@@ -146,8 +146,11 @@ func (r *Runner) executePlaybook(runId string, project *structures.Project, play
 	command := strings.Builder{}
 	command.WriteString("ansible-playbook")
 
-	if mode == structures.PlaybookRunModeCheck {
+	switch mode {
+	case structures.PlaybookRunModeCheck:
 		command.WriteString(" --check --diff")
+	case structures.PlaybookRunModeSyntax:
+		command.WriteString(" --syntax-check")
 	}
 
 	inventory := fmt.Sprintf("inventories/%s", project.Inventory)

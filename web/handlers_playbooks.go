@@ -54,6 +54,8 @@ func (s *Server) playbookRun(c echo.Context) error {
 		mode = structures.PlaybookRunModeExecute
 	case "check":
 		mode = structures.PlaybookRunModeCheck
+	case "syntax":
+		mode = structures.PlaybookRunModeSyntax
 	default:
 		return errors.New("unknown run mode")
 	}

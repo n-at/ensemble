@@ -5,6 +5,7 @@ import "time"
 const (
 	PlaybookRunModeCheck   = 1
 	PlaybookRunModeExecute = 2
+	PlaybookRunModeSyntax  = 3
 
 	PlaybookRunResultRunning = 1
 	PlaybookRunResultSuccess = 2

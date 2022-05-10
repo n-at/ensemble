@@ -36,14 +36,14 @@ func (s *Server) playbookRunResult(c echo.Context) error {
 	var runUser *structures.User
 
 	runResult, err := s.store.RunResultGet(context.playbookRun.Id)
-	if err == nil {
+	if err != nil {
+		log.Warnf("playbookRunResult playbook run %s get result error: %s", context.playbookRun.Id, err)
+	} else if context.playbookRun.Mode != structures.PlaybookRunModeSyntax {
 		ansibleResult = &structures.AnsibleExecution{}
 		if err := json.Unmarshal([]byte(runResult.Output), ansibleResult); err != nil {
 			log.Warnf("playbookRunResult playbook run %s unmarshal error: %s", context.playbookRun.Id, err)
 			ansibleResult = nil
 		}
-	} else {
-		log.Warnf("playbookRunResult playbook run %s get result error: %s", context.playbookRun.Id, err)
 	}
 
 	runUser, err = s.store.UserGet(context.playbookRun.UserId)
