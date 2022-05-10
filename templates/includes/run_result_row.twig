@@ -41,8 +41,8 @@
     </div>
     <div class="col-4 text-end">
         {% if not run.FinishTime.IsZero() %}
-            <span class="text-secondary" title="Finish time">
-                <i class="bi bi-clock"></i> {{run.FinishTime.Format("02.01.2006 15:04:05")}}
+            <span class="text-secondary" title="Duration">
+                <i class="bi bi-clock"></i> {{run.RunTime().String() }}
             </span>
         {% endif %}
     </div>

@@ -1,7 +1,8 @@
 <div class="card mb-2">
     <div class="card-header">
         <div>
-            <strong>{{title}}:</strong> {{host}}
+            <strong>{{ title }}:</strong>
+            <code>{{ host }}</code>
             {% if task_result.Changed %}
                 - <span class="text-warning">changed</span>
             {% endif %}
@@ -15,7 +16,7 @@
         {% if task_result.Action %}
             <div>
                 <strong>Action:</strong>
-                {{ task_result.Action }}
+                <code>{{ task_result.Action }}</code>
             </div>
         {% endif %}
     </div>

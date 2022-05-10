@@ -23,3 +23,10 @@ type PlaybookRun struct {
 	InventoryFile string
 	VariablesFile string
 }
+
+func (r *PlaybookRun) RunTime() time.Duration {
+	if r.StartTime.IsZero() || r.FinishTime.IsZero() {
+		return 0
+	}
+	return r.FinishTime.Sub(r.StartTime)
+}

@@ -132,7 +132,7 @@ type AnsibleFacts struct {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-func (d AnsibleDuration) StartDate() time.Time {
+func (d AnsibleDuration) StartTime() time.Time {
 	t, err := time.Parse("2006-01-02T15:04:05Z", d.Start)
 	if err != nil {
 		return time.Time{}
@@ -140,12 +140,21 @@ func (d AnsibleDuration) StartDate() time.Time {
 	return t
 }
 
-func (d AnsibleDuration) EndDate() time.Time {
+func (d AnsibleDuration) EndTime() time.Time {
 	t, err := time.Parse("2006-01-02T15:04:05Z", d.End)
 	if err != nil {
 		return time.Time{}
 	}
 	return t
+}
+
+func (d AnsibleDuration) RunTime() time.Duration {
+	start := d.StartTime()
+	end := d.EndTime()
+	if start.IsZero() || end.IsZero() {
+		return 0
+	}
+	return end.Sub(start)
 }
 
 func (d *AnsibleResultDiff) UnmarshalJSON(data []byte) error {
