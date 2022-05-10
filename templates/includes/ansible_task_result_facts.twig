@@ -1,0 +1,73 @@
+<h5>Facts</h5>
+<div class="row">
+    <div class="col-6">
+        <dl class="row">
+            <dt class="col-sm-4">Architecture</dt>
+            <dd class="col-sm-8">{{ facts.Architecture | default:"-" }}</dd>
+
+            <dt class="col-sm-4">CPU count</dt>
+            <dd class="col-sm-8">{{ facts.CpuCount | default:"-" }}</dd>
+
+            <dt class="col-sm-4">CPU Cores</dt>
+            <dd class="col-sm-8">{{ facts.CpuCores | default:"-" }}</dd>
+
+            <dt class="col-sm-4">Memory Total</dt>
+            <dd class="col-sm-8">{{ facts.MemoryTotal | default:"-" }} MB</dd>
+
+            <dt class="col-sm-4">Swap Total</dt>
+            <dd class="col-sm-8">{{ facts.MemorySwapTotal | default:"-" }} MB</dd>
+
+            <dt class="col-sm-4">BIOS vendor</dt>
+            <dd class="col-sm-8">{{ facts.BiosVendor | default:"-" }}</dd>
+
+            <dt class="col-sm-4">BIOS version</dt>
+            <dd class="col-sm-8">{{ facts.BiosVersion | default:"-" }}</dd>
+
+            <dt class="col-sm-4">BIOS date</dt>
+            <dd class="col-sm-8">{{ facts.BiosDate | default:"-" }}</dd>
+
+            <dt class="col-sm-4">Board Vendor</dt>
+            <dd class="col-sm-8">{{ facts.BoardVendor | default:"-" }}</dd>
+
+            <dt class="col-sm-4">Board Name</dt>
+            <dd class="col-sm-8">{{ facts.BoardName | default:"-" }}</dd>
+
+            <dt class="col-sm-4">Board Version</dt>
+            <dd class="col-sm-8">{{ facts.BoardVersion | default:"-" }}</dd>
+        </dl>
+    </div>
+
+    <div class="col-6">
+        <dl class="row">
+            <dt class="col-sm-4">System</dt>
+            <dd class="col-sm-8">{{ facts.System | default:"-" }}</dd>
+
+            <dt class="col-sm-4">Distribution</dt>
+            <dd class="col-sm-8">{{ facts.Distribution | default:"-" }}</dd>
+
+            <dt class="col-sm-4">Distr. Version</dt>
+            <dd class="col-sm-8">{{ facts.DistributionVersion | default:"-" }}</dd>
+
+            <dt class="col-sm-4">Distr. Release</dt>
+            <dd class="col-sm-8">{{ facts.DistributionRelease | default:"-" }}</dd>
+
+            <dt class="col-sm-4">Kernel</dt>
+            <dd class="col-sm-8">{{ facts.Kernel | default:"-" }}</dd>
+
+            <dt class="col-sm-4">Kernel Version</dt>
+            <dd class="col-sm-8">{{ facts.KernelVersion | default:"-" }}</dd>
+
+            <dt class="col-sm-4">OS Family</dt>
+            <dd class="col-sm-8">{{ facts.OsFamily | default:"-" }}</dd>
+
+            <dt class="col-sm-4">Pkg Manager</dt>
+            <dd class="col-sm-8">{{ facts.OsPackageManager | default:"-" }}</dd>
+
+            <dt class="col-sm-4">Svc Manager</dt>
+            <dd class="col-sm-8">{{ facts.OsServiceManager | default:"-" }}</dd>
+
+            <dt class="col-sm-4">Python version</dt>
+            <dd class="col-sm-8">{{ facts.PythonVersion | default:"-" }}</dd>
+        </dl>
+    </div>
+</div>

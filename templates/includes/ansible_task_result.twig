@@ -20,6 +20,10 @@
         {% endif %}
     </div>
     <div class="card-body">
+        {% if task_result.Facts.System %}
+            {% include "ansible_task_result_facts.twig" with facts=task_result.Facts %}
+        {% endif %}
+
         {% if task_result.Destination %}
             <div>
                 <strong class="text-secondary">Destination:</strong>
@@ -35,27 +39,22 @@
         {% endif %}
 
         {% if task_result.Message %}
-            <div>
-                <strong class="text-secondary">Message:</strong>
-            </div>
+            <h5>Message</h5>
             <pre><code>{{ task_result.Message }}</code></pre>
         {% endif %}
 
         {% if task_result.Stdout %}
-            <div>
-                <strong class="text-secondary">Standard output:</strong>
-            </div>
+            <h5>Standard output</h5>
             <pre><code>{{ task_result.Stdout }}</code></pre>
         {% endif %}
 
         {% if task_result.Stderr %}
-            <div>
-                <strong class="text-secondary">Standard errors:</strong>
-            </div>
+            <h5>Standard errors</h5>
             <pre><code>{{ task_result.Stderr }}</code></pre>
         {% endif %}
 
         {% if task_result.Diff and task_result.Diff.Items %}
+            <h5>Differences</h5>
             {% for diff in task_result.Diff.Items %}
                 <div class="diff">
                     <div class="diff-before-header">{{ diff.BeforeHeader }}</div>

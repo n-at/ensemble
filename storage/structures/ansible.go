@@ -44,6 +44,7 @@ type AnsibleTaskResult struct {
 	Skipped     bool                `json:"skipped"`
 	Destination string              `json:"dest"`
 	Diff        AnsibleResultDiff   `json:"diff"`
+	Facts       AnsibleFacts        `json:"ansible_facts"`
 	ReturnCode  bool                `json:"rc"`
 	Message     string              `json:"msg"`
 	Stdout      string              `json:"stdout"`
@@ -97,6 +98,36 @@ type AnsibleTemplateDiff struct {
 
 type AnsibleTemplateDiffPath struct {
 	Path string `json:"path"`
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+type AnsibleFacts struct {
+	Architecture             string `json:"ansible_architecture"`
+	HostName                 string `json:"ansible_hostname"`
+	System                   string `json:"ansible_system"`
+	BiosDate                 string `json:"ansible_bios_date"`
+	BiosVendor               string `json:"ansible_bios_vendor"`
+	BiosVersion              string `json:"ansible_bios_version"`
+	BoardVendor              string `json:"ansible_board_vendor"`
+	BoardName                string `json:"ansible_board_name"`
+	BoardVersion             string `json:"ansible_board_version"`
+	Distribution             string `json:"ansible_distribution"`
+	DistributionFile         bool   `json:"ansible_distribution_file_parsed"`
+	DistributionFileVariety  string `json:"ansible_distribution_file_variety"`
+	DistributionVersionMajor string `json:"ansible_distribution_major_version"`
+	DistributionVersion      string `json:"ansible_distribution_version"`
+	DistributionRelease      string `json:"ansible_distribution_release"`
+	Kernel                   string `json:"ansible_kernel"`
+	KernelVersion            string `json:"ansible_kernel_version"`
+	OsFamily                 string `json:"ansible_os_family"`
+	OsPackageManager         string `json:"ansible_pkg_mgr"`
+	OsServiceManager         string `json:"ansible_service_mgr"`
+	MemoryTotal              int    `json:"ansible_memtotal_mb"`
+	MemorySwapTotal          int    `json:"ansible_swaptotal_mb"`
+	CpuCount                 int    `json:"ansible_processor_count"`
+	CpuCores                 int    `json:"ansible_processor_cores"`
+	PythonVersion            string `json:"ansible_python_version"`
 }
 
 ///////////////////////////////////////////////////////////////////////////////
