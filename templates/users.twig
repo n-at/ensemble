@@ -4,6 +4,11 @@
     Users - ensemble
 {% endblock %}
 
+{% block assets %}
+    <script src="/assets/node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="/assets/filter.js"></script>
+{% endblock %}
+
 {% block content %}
 
     <h1>Users</h1>
@@ -15,12 +20,14 @@
     </p>
 
     {% if users %}
-        <ul class="list-group list-group-hover mb-3">
+        {% include "includes/filter.twig" %}
+
+        <ul class="list-group list-group-hover filter-container mb-3">
             {% for user_item in users %}
-                <li class="list-group-item">
+                <li class="list-group-item filter-element">
                     <div class="row">
                         <div class="col-lg-10 col-md-9">
-                            <div class="lead">
+                            <div class="lead filter-field">
                                 {% if user_item.Role == 1 %}
                                     <i class="bi bi-person-circle text-secondary" title="Admin"></i>
                                 {% endif %}

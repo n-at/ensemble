@@ -4,7 +4,14 @@
     Projects - ensemble
 {% endblock %}
 
+{% block assets %}
+    <script src="/assets/node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="/assets/filter.js"></script>
+{% endblock %}
+
 {% block content %}
+
+    <h1>Projects</h1>
 
     {% if user.CanCreateProjects() %}
         <div class="mb-3">
@@ -15,15 +22,17 @@
     {% endif %}
 
     {% if projects %}
-        <ul class="list-group list-group-hover mb-3">
+        {% include "includes/filter.twig" %}
+
+        <ul class="list-group list-group-hover mb-3 filter-container">
             {% for projectInfo in projects %}
                 {% set project = projectInfo.Project %}
                 {% set update = projectInfo.Update %}
-                <li class="list-group-item">
+                <li class="list-group-item filter-element">
                     <div class="row">
                         <div class="col-lg-10 col-md-9">
                             <div>
-                                <div class="lead">{{ project.Name }}</div>
+                                <div class="lead filter-field">{{ project.Name }}</div>
                                 {% if project.Description %}
                                     <div class="mt-3">
                                         {{ project.Description }}

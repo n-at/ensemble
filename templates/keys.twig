@@ -4,6 +4,11 @@
     Private keys - ensemble
 {% endblock %}
 
+{% block assets %}
+    <script src="/assets/node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="/assets/filter.js"></script>
+{% endblock %}
+
 {% block content %}
 
     <h1>Private keys</h1>
@@ -15,16 +20,18 @@
     </p>
 
     {% if keys %}
-        <ul class="list-group list-group-hover">
+        {% include "includes/filter.twig" %}
+
+        <ul class="list-group list-group-hover filter-container mb-3">
             {% for key in keys %}
-                <li class="list-group-item">
+                <li class="list-group-item filter-element">
                     <div class="row">
                         <div class="col-11">
                             <div class="lead">
                                 {% if key.Password %}
                                     <i class="bi bi-key" title="Encrypted"></i>
                                 {% endif %}
-                                {{ key.Name }}
+                                <span class="filter-field">{{ key.Name }}</span>
                             </div>
                         </div>
                         <div class="col-1 text-nowrap text-end">

@@ -4,21 +4,28 @@
     {{project.Name}} playbooks - ensemble
 {% endblock %}
 
+{% block assets %}
+    <script src="/assets/node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="/assets/filter.js"></script>
+{% endblock %}
+
 {% block content %}
     {% include "includes/breadcrumbs/project_playbooks.twig" %}
 
     <h1>Playbooks</h1>
-    <h2>{{project.Name}}</h2>
+    <h2 class="mb-3">{{project.Name}}</h2>
 
     {% if playbooks %}
-        <ul class="list-group list-group-hover mb-3 mt-3">
+        {% include "includes/filter.twig" %}
+
+        <ul class="list-group list-group-hover filter-container mb-3 mt-3">
             {% for playbookInfo in playbooks %}
                 {% set playbook = playbookInfo.Playbook %}
                 {% set run = playbookInfo.Run %}
-                <li class="list-group-item">
+                <li class="list-group-item filter-element">
                     <div class="row">
                         <div class="col-lg-10 col-md-9">
-                            <div class="lead">
+                            <div class="lead filter-field">
                                 {% if playbook.Locked %}
                                     <i class="bi bi-lock" title="Locked"></i>
                                 {% endif %}
