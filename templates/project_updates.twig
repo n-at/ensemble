@@ -1,32 +1,22 @@
 {% extends "includes/layout.twig" %}
 
 {% block title %}
-    {{project.Name}} repository updates - ensemble
+    {{ project.Name }} - repository updates - ensemble
 {% endblock %}
 
 {% block content %}
     {% include "includes/breadcrumbs/project_updates.twig" %}
 
     <h1>Repository updates</h1>
-    <h2>{{project.Name}}</h2>
+    <h2>{{ project.Name }}</h2>
 
     {% if updates %}
-        <ul class="list-group">
+        <ul class="list-group list-group-hover">
             {% for update in updates %}
                 <li class="list-group-item">
                     <div class="row">
                         <div class="col-lg-10 col-md-9">
-                            <div>
-                                {% if update.Success %}
-                                    <i class="text-success bi bi-check"></i>
-                                {% else %}
-                                    <i class="text-danger bi bi-x"></i>
-                                {% endif %}
-                                {{update.Date.Format("02.01.2006 15:04:05")}}
-                            </div>
-                            <div>
-                                {{update.Revision}}
-                            </div>
+                            {% include "includes/project_update_title.twig" %}
                         </div>
                         <div class="col-lg-2 col-md-3 mt-3 mt-md-0 text-end text-nowrap">
                             <a href="/projects/updates/{{project.Id}}/log/{{update.Id}}"
@@ -39,7 +29,7 @@
                                class="btn btn-sm btn-outline-danger"
                                title="Delete update log"
                             >
-                                <i class="bi bi-trash"></i>
+                                <i class="bi bi-x-circle"></i>
                             </a>
                         </div>
                     </div>

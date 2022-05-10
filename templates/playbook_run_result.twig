@@ -1,7 +1,7 @@
 {% extends "includes/layout.twig" %}
 
 {% block title %}
-    {% include "includes/project_with_playbook_name.twig" %} - run result - ensemble
+    {{project.Name}} - {{ playbook.Name | default:playbook.Filename }} - run result - ensemble
 {% endblock %}
 
 {% block assets %}
@@ -21,7 +21,7 @@
     {% include "includes/breadcrumbs/project_playbook_run_result.twig" %}
 
     <h1>Playbook run result</h1>
-    <h2>{% include "includes/project_with_playbook_name.twig" %}</h2>
+    <h2>{{project.Name}} - {{ playbook.Name | default:playbook.Filename }}</h2>
 
     <div class="mb-3 mt-3 card">
         <div class="card-body">
@@ -33,18 +33,13 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-4">
-                    <i class="bi bi-person" title="User"></i> {{run_user.Login}}
+                    <i class="bi bi-person" title="User"></i> {{ run_user.Login | default:"none" }}
                 </div>
                 <div class="col-4 text-center">
-                    <i class="bi bi-pc-display" title="Inventory"></i> {{run.InventoryFile}}
+                    <i class="bi bi-pc-display" title="Inventory"></i> {{ run.InventoryFile | default:"none" }}
                 </div>
                 <div class="col-4 text-end">
-                    <i class="bi bi-list"></i>
-                    {% if run.VariablesFile %}
-                        {{run.VariablesFile}}
-                    {% else %}
-                        none
-                    {% endif %}
+                    <i class="bi bi-list"></i> {{run.VariablesFile | default:"none"}}
                 </div>
             </div>
         </div>
@@ -170,9 +165,7 @@
         {% endfor %}
     {% elif run_result.Output %}
         <div class="card mb-3">
-            <div class="card-header">
-                Run result
-            </div>
+            <h5 class="card-header">Run result</h5>
             <div class="card-body">
                 <pre><code>{{ run_result.Output }}</code></pre>
             </div>

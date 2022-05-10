@@ -9,7 +9,7 @@
     {% if user.CanCreateProjects() %}
         <div class="mb-3">
             <a href="/projects/new" class="btn btn-outline-success">
-                <i class="bi bi-plus"></i> New project
+                <i class="bi bi-plus-circle"></i> New project
             </a>
         </div>
     {% endif %}
@@ -23,40 +23,40 @@
                     <div class="row">
                         <div class="col-lg-10 col-md-9">
                             <div>
-                                <div class="lead">{{project.Name}}</div>
+                                <div class="lead">{{ project.Name }}</div>
                                 {% if project.Description %}
                                     <div class="mt-3">
-                                        {{project.Description}}
+                                        {{ project.Description }}
                                     </div>
                                 {% endif %}
                             </div>
                         </div>
                         <div class="col-lg-2 col-md-3 mt-3 mt-md-0 text-end text-nowrap">
-                            <a href="/projects/playbooks/{{project.Id}}" class="btn btn-sm btn-outline-primary">Playbooks</a>
+                            <a href="/projects/playbooks/{{ project.Id }}" class="btn btn-sm btn-outline-primary">Playbooks</a>
                             <div class="d-inline-block dropdown">
                                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
                                         type="button"
-                                        id="project-menu-{{project.Id}}"
+                                        id="project-menu-{{ project.Id }}"
                                         data-bs-toggle="dropdown"
                                         aria-expanded="false">
                                     <i class="bi bi-three-dots"></i>
                                 </button>
-                                <ul class="dropdown-menu" aria-labelledby="project-menu-{{project.Id}}">
+                                <ul class="dropdown-menu" aria-labelledby="project-menu-{{ project.Id }}">
                                     <li>
-                                        <a class="dropdown-item" href="/projects/update/{{project.Id}}">Update repository</a>
+                                        <a class="dropdown-item" href="/projects/update/{{ project.Id }}">Update repository</a>
                                     </li>
                                     {% if user.CanEditProjects() %}
                                         <li>
-                                            <a class="dropdown-item" href="/projects/updates/{{project.Id}}">Updates</a>
+                                            <a class="dropdown-item" href="/projects/updates/{{ project.Id }}">Updates</a>
                                         </li>
                                         <li>
                                             <hr class="dropdown-divider">
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" href="/projects/edit/{{project.Id}}">Edit</a>
+                                            <a class="dropdown-item" href="/projects/edit/{{ project.Id }}">Edit</a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" href="/projects/delete/{{project.Id}}">Delete</a>
+                                            <a class="dropdown-item" href="/projects/delete/{{ project.Id }}">Delete</a>
                                         </li>
                                     {% endif %}
                                 </ul>
@@ -65,25 +65,20 @@
                     </div>
                     <div class="mt-3">
                         <span class="text-secondary me-3" title="Inventory">
-                            <i class="bi bi-pc-display"></i> {{project.Inventory}}
+                            <i class="bi bi-pc-display"></i> {{ project.Inventory | default:"none" }}
                         </span>
                         <span class="text-secondary me-3" title="Variables">
-                            <i class="bi bi-list"></i>
-                            {% if project.Variables %}
-                                {{project.Variables}}
-                            {% else %}
-                                none
-                            {% endif %}
+                            <i class="bi bi-list"></i> {{ project.Variables | default:"none" }}
                         </span>
+                        {% if project.VariablesVault %}
+                            <span class="text-secondary me-3">
+                                <i class="bi bi-lock"></i> Vault
+                            </span>
+                        {% endif %}
                         {% if update %}
                             <span class="{% if update.Success %}text-success{% else %}text-danger{% endif %}"
                                   title="Last repository update">
-                                {% if update.Success %}
-                                    <i class="bi bi-check"></i>
-                                {% else %}
-                                    <i class="bi bi-x"></i>
-                                {% endif %}
-                                {{update.Date.Format("02.01.2006 15:04:05")}} - {{update.Revision}}
+                                {% include "includes/project_update_title.twig" %}
                             </span>
                         {% endif %}
                     </div>

@@ -1,0 +1,6 @@
+{% if update.Success %}
+    <i class="text-success bi bi-check"></i>
+{% else %}
+    <i class="text-danger bi bi-x"></i>
+{% endif %}
+{{update.Date.Format("02.01.2006 15:04:05")}} - {{update.Revision}}

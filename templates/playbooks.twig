@@ -22,11 +22,7 @@
                                 {% if playbook.Locked %}
                                     <i class="bi bi-lock" title="Locked"></i>
                                 {% endif %}
-                                {% if playbook.Name %}
-                                    {{ playbook.Name }}
-                                {% else %}
-                                    {{ playbook.Filename }}
-                                {% endif %}
+                                {{ playbook.Name | default:playbook.Filename }}
                             </div>
                             {% if playbook.Description %}
                                 <div class="mt-3">

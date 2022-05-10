@@ -1,26 +1,21 @@
 {% extends "includes/layout.twig" %}
 
 {% block title %}
-    {{project.Name}} repository update log - ensemble
+    {{ project.Name }} - repository update log - ensemble
 {% endblock %}
 
 {% block content %}
     {% include "includes/breadcrumbs/project_update_log.twig" %}
 
     <h1>Repository update log</h1>
-    <h2>{{project.Name}}</h2>
+    <h2>{{ project.Name }}</h2>
 
     <div class="card mb-3 mt-3">
         <div class="card-header">
-            {% if update.Success %}
-                <i class="text-success bi bi-check"></i>
-            {% else %}
-                <i class="text-danger bi bi-x"></i>
-            {% endif %}
-            {{update.Date.Format("02.01.2006 15:04:05")}} - {{update.Revision}}
+            {% include "includes/project_update_title.twig" %}
         </div>
         <div class="card-body">
-            <pre><code>{{update.Log}}</code></pre>
+            <pre><code>{{ update.Log }}</code></pre>
         </div>
     </div>
 

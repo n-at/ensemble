@@ -10,7 +10,7 @@
 
     <p>
         <a href="/users/new" class="btn btn-outline-success">
-            <i class="bi bi-plus"></i> New user
+            <i class="bi bi-plus-circle"></i> New user
         </a>
     </p>
 
@@ -22,9 +22,9 @@
                         <div class="col-lg-10 col-md-9">
                             <div class="lead">
                                 {% if user_item.Role == 1 %}
-                                    <i class="bi bi-person-square" title="Admin"></i>
+                                    <i class="bi bi-person-circle text-secondary" title="Admin"></i>
                                 {% endif %}
-                                {{user_item.Login}}
+                                {{ user_item.Login }}
                             </div>
                         </div>
                         <div class="col-lg-2 col-md-3 mt-3 mt-md-0 text-end text-nowrap">

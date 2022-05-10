@@ -1,27 +1,22 @@
 {% extends "includes/layout.twig" %}
 
 {% block title %}
-    {{project.Name}} delete repository update - ensemble
+    {{ project.Name }} - delete repository update log - ensemble
 {% endblock %}
 
 {% block content %}
     {% include "includes/breadcrumbs/project_update_delete.twig" %}
 
     <h1>Delete repository update log</h1>
-    <h2>{{project.Name}}</h2>
+    <h2>{{ project.Name }}</h2>
 
     <p class="mt-3 mb-3">
-        {% if update.Success %}
-            <i class="text-success bi bi-check"></i>
-        {% else %}
-            <i class="text-danger bi bi-x"></i>
-        {% endif %}
-        {{update.Date.Format("02.01.2006 15:04:05")}} - {{update.Revision}}
+        {% include "includes/project_update_title.twig" %}
     </p>
 
     <hr>
 
-    <form method="post" action="/projects/updates/{{project.Id}}/delete/{{update.Id}}" enctype="application/x-www-form-urlencoded">
+    <form method="post" action="/projects/updates/{{ project.Id }}/delete/{{ update.Id }}" enctype="application/x-www-form-urlencoded">
         <div class="mb-3 text-end">
             <button type="submit" class="btn btn-danger">Delete update log</button>
         </div>

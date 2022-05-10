@@ -1,14 +1,14 @@
 {% extends "includes/layout.twig" %}
 
 {% block title %}
-    Delete run - ensemble
+    {{project.Name}} - {{ playbook.Name | default:playbook.Filename }} - delete run - ensemble
 {% endblock %}
 
 {% block content %}
     {% include "includes/breadcrumbs/project_playbook_run_delete.twig" %}
 
     <h1>Delete playbook run</h1>
-    <h2>{% include "includes/project_with_playbook_name.twig" %}</h2>
+    <h2>{{project.Name}} - {{ playbook.Name | default:playbook.Filename }}</h2>
 
     <form method="post" action="/projects/playbooks/{{project.Id}}/runs/{{playbook.Id}}/delete/{{run.Id}}" enctype="application/x-www-form-urlencoded">
         <p class="lead">
@@ -21,5 +21,4 @@
             </button>
         </div>
     </form>
-
 {% endblock %}

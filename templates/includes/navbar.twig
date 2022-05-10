@@ -4,6 +4,17 @@
         <a class="navbar-brand" href="/">ensemble</a>
 
         {% if user %}
+            <button class="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navbar-collapse"
+                    aria-controls="navbar-collapse"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
             <div class="collapse navbar-collapse" id="navbar-collapse">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
@@ -27,10 +38,9 @@
                     </li>
                 </ul>
                 <div class="navbar-text">
-                    {{user.Login}}
+                    {{ user.Login }}
                 </div>
             </div>
         {% endif %}
-
     </div>
 </nav>
