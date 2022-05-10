@@ -81,6 +81,9 @@ func (k *KeyManager) AddKey(key *structures.Key) error {
 	if len(k.config.AuthSock) != 0 {
 		authSock := fmt.Sprintf("SSH_AUTH_SOCK=%s", shellescape.Quote(k.config.AuthSock))
 		cmd.Env = append(cmd.Env, authSock)
+	} else if len(os.Getenv("SSH_AUTH_SOCK")) != 0 {
+		authSock := fmt.Sprintf("SSH_AUTH_SOCK=%s", shellescape.Quote(os.Getenv("SSH_AUTH_SOCK")))
+		cmd.Env = append(cmd.Env, authSock)
 	}
 
 	output, err := cmd.CombinedOutput()
