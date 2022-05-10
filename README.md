@@ -2,6 +2,8 @@
 
 Web service for [ansible](https://www.ansible.com/) playbooks execution. 
 
+![Screenshot](assets/pic.png)
+
 ## Building
 
 Go 1.18+ and npm 7+ required.
