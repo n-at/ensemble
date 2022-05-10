@@ -20,6 +20,13 @@
         {% endif %}
     </div>
     <div class="card-body">
+        {% if task_result.Destination %}
+            <div>
+                <strong class="text-secondary">Destination:</strong>
+                {{ task_result.Destination }}
+            </div>
+        {% endif %}
+
         {% if task_result.ReturnCode %}
             <div>
                 <strong class="text-secondary">Return code:</strong>

@@ -42,6 +42,7 @@ type AnsibleTaskResult struct {
 	Changed     bool                `json:"changed"`
 	Failed      bool                `json:"failed"`
 	Skipped     bool                `json:"skipped"`
+	Destination string              `json:"dest"`
 	Diff        AnsibleResultDiff   `json:"diff"`
 	ReturnCode  bool                `json:"rc"`
 	Message     string              `json:"msg"`
@@ -51,15 +52,16 @@ type AnsibleTaskResult struct {
 }
 
 type AnsibleItemResult struct {
-	Item       string            `json:"item"`
-	Changed    bool              `json:"changed"`
-	Failed     bool              `json:"failed"`
-	Skipped    bool              `json:"skipped"`
-	Diff       AnsibleResultDiff `json:"diff"`
-	ReturnCode bool              `json:"rc"`
-	Message    string            `json:"msg"`
-	Stdout     []string          `json:"stdout"`
-	Stderr     []string          `json:"stderr"`
+	Item        string            `json:"item"`
+	Changed     bool              `json:"changed"`
+	Failed      bool              `json:"failed"`
+	Skipped     bool              `json:"skipped"`
+	Destination string            `json:"dest"`
+	Diff        AnsibleResultDiff `json:"diff"`
+	ReturnCode  bool              `json:"rc"`
+	Message     string            `json:"msg"`
+	Stdout      []string          `json:"stdout"`
+	Stderr      []string          `json:"stderr"`
 }
 
 type AnsibleStats struct {
