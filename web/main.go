@@ -124,7 +124,7 @@ func New(configuration Configuration, store *storage.Storage, manager *repositor
 
 	playbookRunDelete := playbookRuns.Group("/delete")
 	playbookRunDelete.Use(s.playbookRunRequiredMiddleware)
-	playbookRunDelete.Use(s.projectWriteAccessRequiredMiddleware)
+	playbookRunDelete.Use(s.playbookRunDeleteAccessRequiredMiddleware)
 	playbookRunDelete.GET("/:playbook_run_id", s.playbookRunDeleteForm)
 	playbookRunDelete.POST("/:playbook_run_id", s.playbookRunDeleteSubmit)
 

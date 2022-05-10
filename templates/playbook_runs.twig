@@ -25,12 +25,14 @@
                             >
                                 <i class="bi bi-list"></i>
                             </a>
-                            <a href="/projects/playbooks/{{project.Id}}/runs/{{playbook.Id}}/delete/{{run.Id}}"
-                               class="btn btn-sm btn-outline-danger"
-                               title="Delete"
-                            >
-                                <i class="bi bi-trash"></i>
-                            </a>
+                            {% if user.CanDeletePlaybookRuns() %}
+                                <a href="/projects/playbooks/{{project.Id}}/runs/{{playbook.Id}}/delete/{{run.Id}}"
+                                   class="btn btn-sm btn-outline-danger"
+                                   title="Delete"
+                                >
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                 </li>

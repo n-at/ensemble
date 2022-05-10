@@ -194,6 +194,16 @@ func (s *Server) playbookRunRequiredMiddleware(next echo.HandlerFunc) echo.Handl
 	}
 }
 
+func (s *Server) playbookRunDeleteAccessRequiredMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		context := c.(*EnsembleContext)
+		if !context.user.CanDeletePlaybookRuns() {
+			return errors.New("playbook run delete denied")
+		}
+		return next(c)
+	}
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 func (s *Server) userControlAccessRequiredMiddleware(next echo.HandlerFunc) echo.HandlerFunc {

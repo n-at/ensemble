@@ -28,6 +28,10 @@ func (u *User) CanLockPlaybooks() bool {
 	return u.Role == UserRoleAdmin
 }
 
+func (u *User) CanDeletePlaybookRuns() bool {
+	return u.Role == UserRoleAdmin
+}
+
 func (u *User) CanControlUsers() bool {
 	return u.Role == UserRoleAdmin
 }
