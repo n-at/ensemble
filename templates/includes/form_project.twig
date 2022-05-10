@@ -43,35 +43,37 @@
     </div>
 </fieldset>
 
-<fieldset>
-    <legend>Settings</legend>
-    <div class="mb-3">
-        <label for="inventory" class="form-label">Inventory</label>
-        <select id="inventory" name="inventory" class="form-select">
-            {% for inventory in project.InventoryList %}
-                <option value="{{inventory}}" {% if inventory == project.Inventory %}selected{% endif %}>{{inventory}}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="mb-3">
-        <label for="variables" class="form-label">Additional variables</label>
-        <select id="variables" name="variables" class="form-select">
-            <option value="" {% if project.Variables == "" %}selected{% endif %}>None</option>
-            {% for variables in project.VariablesList %}
-                <option value="{{variables}}" {% if variables == project.Variables %}selected{% endif %}>{{variables}}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="mb-3">
-        <label for="vault_password" class="form-label">Vault password</label>
-        <input type="password" id="vault_password" name="vault_password" class="form-control" value="">
-    </div>
-    {% if mode == "edit" %}
-        <p class="alert alert-info">
-            Leave vault password field blank to keep current value
-        </p>
-    {% endif %}
-</fieldset>
+{% if mode == "edit" %}
+    <fieldset>
+        <legend>Settings</legend>
+        <div class="mb-3">
+            <label for="inventory" class="form-label">Inventory</label>
+            <select id="inventory" name="inventory" class="form-select">
+                {% for inventory in project.InventoryList %}
+                    <option value="{{inventory}}" {% if inventory == project.Inventory %}selected{% endif %}>{{inventory}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="variables" class="form-label">Additional variables</label>
+            <select id="variables" name="variables" class="form-select">
+                <option value="" {% if project.Variables == "" %}selected{% endif %}>None</option>
+                {% for variables in project.VariablesList %}
+                    <option value="{{variables}}" {% if variables == project.Variables %}selected{% endif %}>{{variables}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% if project.VariablesVault %}
+            <div class="mb-3">
+                <label for="vault_password" class="form-label">Vault password</label>
+                <input type="password" id="vault_password" name="vault_password" class="form-control" value="">
+            </div>
+            <p class="alert alert-info">
+                Leave vault password field blank to keep current value
+            </p>
+        {% endif %}
+    </fieldset>
+{% endif %}
 
 <hr>
 

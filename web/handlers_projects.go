@@ -72,9 +72,6 @@ func (s *Server) projectNewSubmit(c echo.Context) error {
 		RepositoryLogin:    c.FormValue("repo_login"),
 		RepositoryPassword: c.FormValue("repo_password"),
 		RepositoryBranch:   c.FormValue("repo_branch"),
-		Inventory:          c.FormValue("inventory"),
-		Variables:          c.FormValue("variables"),
-		VaultPassword:      c.FormValue("vault_password"),
 	}
 
 	var err error
@@ -96,8 +93,7 @@ func (s *Server) projectNewSubmit(c echo.Context) error {
 		})
 	}
 
-	err = s.store.ProjectInsert(project)
-	if err != nil {
+	if err := s.store.ProjectInsert(project); err != nil {
 		log.Errorf("projectNewSubmit unable to save project: %s", err)
 		return c.Render(http.StatusOK, "templates/project_new.twig", pongo2.Context{
 			"user":    context.user,
@@ -106,9 +102,16 @@ func (s *Server) projectNewSubmit(c echo.Context) error {
 		})
 	}
 
-	err = s.manager.Update(project)
-	if err != nil {
-		log.Warnf("projectNewSubmit unable to update project: %s", err)
+	if err := s.manager.Update(project); err != nil {
+		log.Errorf("projectNewSubmit project %s update error: %s", project.Id, err)
+		if err := s.store.ProjectDelete(project.Id); err != nil {
+			log.Errorf("projectNewSubmit project %s delete error: %s", project.Id, err)
+		}
+		return c.Render(http.StatusOK, "templates/project_new.twig", pongo2.Context{
+			"user":    context.user,
+			"project": project,
+			"error":   err,
+		})
 	}
 
 	return c.Redirect(http.StatusFound, "/projects")
