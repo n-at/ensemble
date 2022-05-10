@@ -30,14 +30,14 @@
         {% endif %}
     </div>
     <div class="col-4 text-end">
-        {% if run.StartTime %}
+        {% if not run.StartTime.IsZero() %}
             <span class="text-secondary" title="Start time">
                 <i class="bi bi-clock-history"></i> {{run.StartTime.Format("02.01.2006 15:04:05")}}
             </span>
         {% endif %}
     </div>
     <div class="col-4 text-end">
-        {% if run.FinishTime %}
+        {% if not run.FinishTime.IsZero() %}
             <span class="text-secondary" title="Finish time">
                 <i class="bi bi-clock"></i> {{run.FinishTime.Format("02.01.2006 15:04:05")}}
             </span>
