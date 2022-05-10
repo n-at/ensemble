@@ -46,8 +46,8 @@ type AnsibleTaskResult struct {
 	Diff        AnsibleResultDiff   `json:"diff"`
 	ReturnCode  bool                `json:"rc"`
 	Message     string              `json:"msg"`
-	Stdout      []string            `json:"stdout_lines"`
-	Stderr      []string            `json:"stderr_lines"`
+	Stdout      string              `json:"stdout"`
+	Stderr      string              `json:"stderr"`
 	ItemResults []AnsibleItemResult `json:"results"`
 }
 
@@ -60,8 +60,8 @@ type AnsibleItemResult struct {
 	Diff        AnsibleResultDiff `json:"diff"`
 	ReturnCode  bool              `json:"rc"`
 	Message     string            `json:"msg"`
-	Stdout      []string          `json:"stdout"`
-	Stderr      []string          `json:"stderr"`
+	Stdout      string            `json:"stdout"`
+	Stderr      string            `json:"stderr"`
 }
 
 type AnsibleStats struct {
