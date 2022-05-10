@@ -46,8 +46,8 @@
             <pre><code>{{ task_result.Stderr }}</code></pre>
         {% endif %}
 
-        {% if task_result.Diff %}
-            {% for diff in task_result.Diff %}
+        {% if task_result.Diff and task_result.Diff.Items %}
+            {% for diff in task_result.Diff.Items %}
                 <div class="diff">
                     <div class="diff-before-header">{{ diff.BeforeHeader }}</div>
                     <pre class="diff-before-content">{{ diff.Before }}</pre>

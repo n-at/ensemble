@@ -1,6 +1,9 @@
 package structures
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type AnsibleExecution struct {
 	Stats map[string]AnsibleStats `json:"stats"`
@@ -39,7 +42,7 @@ type AnsibleTaskResult struct {
 	Changed     bool                `json:"changed"`
 	Failed      bool                `json:"failed"`
 	Skipped     bool                `json:"skipped"`
-	Diff        []AnsibleDiff       `json:"diff"`
+	Diff        AnsibleResultDiff   `json:"diff"`
 	ReturnCode  bool                `json:"rc"`
 	Message     string              `json:"msg"`
 	Stdout      []string            `json:"stdout_lines"`
@@ -47,23 +50,16 @@ type AnsibleTaskResult struct {
 	ItemResults []AnsibleItemResult `json:"results"`
 }
 
-type AnsibleDiff struct {
-	Before       string `json:"before"`
-	BeforeHeader string `json:"before_header"`
-	After        string `json:"after"`
-	AfterHeader  string `json:"after_header"`
-}
-
 type AnsibleItemResult struct {
-	Item       string        `json:"item"`
-	Changed    bool          `json:"changed"`
-	Failed     bool          `json:"failed"`
-	Skipped    bool          `json:"skipped"`
-	Diff       []AnsibleDiff `json:"diff"`
-	ReturnCode bool          `json:"rc"`
-	Message    string        `json:"msg"`
-	Stdout     []string      `json:"stdout"`
-	Stderr     []string      `json:"stderr"`
+	Item       string            `json:"item"`
+	Changed    bool              `json:"changed"`
+	Failed     bool              `json:"failed"`
+	Skipped    bool              `json:"skipped"`
+	Diff       AnsibleResultDiff `json:"diff"`
+	ReturnCode bool              `json:"rc"`
+	Message    string            `json:"msg"`
+	Stdout     []string          `json:"stdout"`
+	Stderr     []string          `json:"stderr"`
 }
 
 type AnsibleStats struct {
@@ -74,6 +70,31 @@ type AnsibleStats struct {
 	Rescued     int `json:"rescued"`
 	Failures    int `json:"failures"`
 	Unreachable int `json:"unreachable"`
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+type AnsibleResultDiff struct {
+	Items        []AnsibleCheckDiff
+	TemplateDiff AnsibleTemplateDiff
+}
+
+//AnsibleCheckDiff Diff from check playbook execution
+type AnsibleCheckDiff struct {
+	Before       string `json:"before"`
+	BeforeHeader string `json:"before_header"`
+	After        string `json:"after"`
+	AfterHeader  string `json:"after_header"`
+}
+
+//AnsibleTemplateDiff Diff from template task execution
+type AnsibleTemplateDiff struct {
+	Before AnsibleTemplateDiffPath `json:"before"`
+	After  AnsibleTemplateDiffPath `json:"after"`
+}
+
+type AnsibleTemplateDiffPath struct {
+	Path string `json:"path"`
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -92,4 +113,19 @@ func (d AnsibleDuration) EndDate() time.Time {
 		return time.Time{}
 	}
 	return t
+}
+
+func (d *AnsibleResultDiff) UnmarshalJSON(data []byte) error {
+	var diff []AnsibleCheckDiff
+	err := json.Unmarshal(data, &diff)
+	if err != nil {
+		var diff AnsibleTemplateDiff
+		err = json.Unmarshal(data, &diff)
+		if err == nil {
+			d.TemplateDiff = diff
+		}
+	} else {
+		d.Items = diff
+	}
+	return nil
 }
