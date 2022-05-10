@@ -12,10 +12,12 @@
                 - <span class="text-secondary">skipped</span>
             {% endif %}
         </div>
-        <div>
-            <strong>Action:</strong>
-            {{task_result.Action}}
-        </div>
+        {% if task_result.Action %}
+            <div>
+                <strong>Action:</strong>
+                {{ task_result.Action }}
+            </div>
+        {% endif %}
     </div>
     <div class="card-body">
         {% if task_result.ReturnCode %}
