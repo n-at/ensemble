@@ -3,6 +3,7 @@ package web
 import (
 	"encoding/json"
 	"ensemble/storage/structures"
+	"errors"
 	"fmt"
 	"github.com/flosch/pongo2/v4"
 	"github.com/labstack/echo/v4"
@@ -105,4 +106,26 @@ func (s *Server) playbookRunTerminate(c echo.Context) error {
 	returnUrl := fmt.Sprintf("/projects/playbooks/%s/runs/%s/result/%s", context.project.Id, context.playbook.Id, context.playbookRun.Id)
 
 	return c.Redirect(http.StatusFound, returnUrl)
+}
+
+func (s *Server) playbookRunDownload(c echo.Context) error {
+	context := c.(*EnsembleContext)
+
+	log.Infof("playbookRunDownload %s", context.playbookRun.Id)
+
+	result, err := s.store.RunResultGet(context.playbookRun.Id)
+	if err != nil {
+		log.Errorf("playbookRunDownload run result %s get error: %s", context.playbookRun.Id, err)
+		return err
+	}
+	if result == nil {
+		log.Warnf("playbookRunDownload run result %s not found", context.playbookRun.Id)
+		return errors.New("playbook run result not found")
+	}
+	if len(result.Output) == 0 {
+		log.Warnf("playbookRunDownload run result %s output is empty", context.playbookRun.Id)
+		return errors.New("playbook run result not found")
+	}
+
+	return c.JSONBlob(http.StatusOK, []byte(result.Output))
 }

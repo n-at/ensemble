@@ -72,9 +72,7 @@
 
     {% if run_result.Error %}
         <div class="card border-danger mb-3">
-            <div class="card-header text-white bg-danger">
-                Run error
-            </div>
+            <h5 class="card-header text-white bg-danger">Run error</h5>
             <div class="card-body">
                 <pre><code>{{ run_result.Error }}</code></pre>
             </div>
@@ -85,38 +83,44 @@
         {% set stats = run_result_ansible.Stats %}
         {% set plays = run_result_ansible.Plays %}
         <div class="card mb-3">
-            <div class="card-header">
-                Run summary
-            </div>
+            <h5 class="card-header">Run summary</h5>
             <div class="card-body">
                 {% for host, result in stats %}
                     {% if forloop.Counter > 1 %}
                         <hr>
                     {% endif %}
                     <p>
-                        <strong>Host:</strong> {{host}}
+                        <strong>Host:</strong> {{ host }}
                     </p>
                     <div class="row">
                         <div class="col-2">
-                            <span class="text-success">Ok: {{result.Ok}}</span>
+                            <span class="text-success">Ok: {{ result.Ok }}</span>
                         </div>
                         <div class="col-2">
-                            <span class="text-warning">Changed: {{result.Changed}}</span>
+                            <span class="text-warning">Changed: {{ result.Changed }}</span>
                         </div>
                         <div class="col-2">
-                            <span class="text-danger">Failures: {{result.Failures}}</span>
+                            <span class="text-danger">Failures: {{ result.Failures }}</span>
                         </div>
                         <div class="col-2">
-                            <span class="text-secondary">Ignored: {{result.Ignored}}</span>
+                            <span class="text-secondary">Ignored: {{ result.Ignored }}</span>
                         </div>
                         <div class="col-2">
-                            <span class="text-secondary">Skipped: {{result.Skipped}}</span>
+                            <span class="text-secondary">Skipped: {{ result.Skipped }}</span>
                         </div>
                         <div class="col-2">
-                            <span class="text-secondary">Unreachable: {{result.Unreachable}}</span>
+                            <span class="text-secondary">Unreachable: {{ result.Unreachable }}</span>
                         </div>
                     </div>
                 {% endfor %}
+                <hr>
+                <div class="mt-3 text-end">
+                    <a class="btn btn-sm btn-outline-secondary"
+                       href="/projects/playbooks/{{ project.Id }}/runs/{{ playbook.Id }}/download/{{ run_result.Id }}"
+                    >
+                        <i class="bi bi-download"></i> Run result JSON
+                    </a>
+                </div>
             </div>
         </div>
 

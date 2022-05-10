@@ -136,6 +136,10 @@ func New(configuration Configuration, store *storage.Storage, manager *repositor
 	playbookRunTerminate.Use(s.playbookRunRequiredMiddleware)
 	playbookRunTerminate.POST("/:playbook_run_id", s.playbookRunTerminate)
 
+	playbookRunDownload := playbookRuns.Group("/download")
+	playbookRunDownload.Use(s.playbookRunRequiredMiddleware)
+	playbookRunDownload.GET("/:playbook_run_id", s.playbookRunDownload)
+
 	//users
 	users := s.e.Group("/users")
 	users.Use(s.authenticationRequiredMiddleware)
