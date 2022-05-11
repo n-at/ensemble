@@ -4,9 +4,12 @@ package web
 
 import (
 	"errors"
+	"fmt"
 	"github.com/flosch/pongo2/v4"
 	"github.com/labstack/echo/v4"
 	"io"
+	"strings"
+	"time"
 )
 
 type Pongo2Renderer struct {
@@ -34,5 +37,27 @@ func (r Pongo2Renderer) Render(w io.Writer, name string, data interface{}, c ech
 		return err
 	}
 
+	ctx["format_duration"] = formatDuration
+
 	return t.ExecuteWriter(ctx, w)
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+func formatDuration(d time.Duration) string {
+	str := strings.Builder{}
+
+	hours := int(d.Hours())
+	minutes := int(d.Minutes())
+	seconds := int(d.Seconds())
+
+	if hours > 0 {
+		str.WriteString(fmt.Sprintf("%02dh ", hours))
+	}
+	if minutes > 0 || hours > 0 {
+		str.WriteString(fmt.Sprintf("%02dm ", minutes))
+	}
+	str.WriteString(fmt.Sprintf("%02d.%03ds", seconds, d.Milliseconds()%1000))
+
+	return str.String()
 }

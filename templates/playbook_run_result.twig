@@ -129,7 +129,7 @@
 
             <h3>Play: {{ info.Name }}</h3>
             <p>
-                <i class="bi bi-clock" title="Duration"></i> {{ info.Duration.RunTime().String() }}
+                <i class="bi bi-clock" title="Duration"></i> {{ format_duration(info.Duration.RunTime()) }}
             </p>
 
             {% for task in tasks %}
@@ -141,7 +141,7 @@
                             <i class="bi bi-play-circle" title="Task"></i> {{ task_info.Name }}
                         </div>
                         <div>
-                            <i class="bi bi-clock" title="Duration"></i> {{ task_info.Duration.RunTime().String() }}
+                            <i class="bi bi-clock" title="Duration"></i> {{ format_duration(task_info.Duration.RunTime()) }}
                         </div>
                     </div>
                     <div class="card-body">
