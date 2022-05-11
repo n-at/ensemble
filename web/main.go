@@ -89,7 +89,6 @@ func New(configuration Configuration, store *storage.Storage, manager *repositor
 
 	projectUpdates := projects.Group("/updates/:project_id")
 	projectUpdates.Use(s.projectRequiredMiddleware)
-	projectUpdates.Use(s.projectWriteAccessRequiredMiddleware)
 	projectUpdates.GET("", s.projectUpdates)
 
 	projectUpdateLog := projectUpdates.Group("/log")
