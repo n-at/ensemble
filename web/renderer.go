@@ -48,8 +48,8 @@ func formatDuration(d time.Duration) string {
 	str := strings.Builder{}
 
 	hours := int(d.Hours())
-	minutes := int(d.Minutes())
-	seconds := int(d.Seconds())
+	minutes := int(d.Minutes()) % 60
+	seconds := int(d.Seconds()) % 60
 
 	if hours > 0 {
 		str.WriteString(fmt.Sprintf("%02dh ", hours))
