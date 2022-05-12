@@ -27,31 +27,31 @@
 
         {% if task_result.Destination %}
             <div>
-                <strong class="text-secondary">Destination:</strong>
+                <strong>Destination:</strong>
                 {{ task_result.Destination }}
             </div>
         {% endif %}
 
         {% if task_result.ReturnCode %}
             <div>
-                <strong class="text-secondary">Return code:</strong>
+                <strong>Return code:</strong>
                 {{ task_result.ReturnCode }}
             </div>
         {% endif %}
 
         {% if task_result.Message %}
             <h5>Message</h5>
-            <pre><code>{{ task_result.Message }}</code></pre>
+            <pre><code class="ansi-output">{{ task_result.Message }}</code></pre>
         {% endif %}
 
         {% if task_result.Stdout %}
             <h5>Standard output</h5>
-            <pre><code>{{ task_result.Stdout }}</code></pre>
+            <pre><code class="ansi-output">{{ task_result.Stdout }}</code></pre>
         {% endif %}
 
         {% if task_result.Stderr %}
             <h5>Standard errors</h5>
-            <pre><code>{{ task_result.Stderr }}</code></pre>
+            <pre><code class="ansi-output">{{ task_result.Stderr }}</code></pre>
         {% endif %}
 
         {% if task_result.Diff and task_result.Diff.Items %}
