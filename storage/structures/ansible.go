@@ -45,7 +45,7 @@ type AnsibleTaskResult struct {
 	Destination string              `json:"dest"`
 	Diff        AnsibleResultDiff   `json:"diff"`
 	Facts       AnsibleFacts        `json:"ansible_facts"`
-	ReturnCode  bool                `json:"rc"`
+	ReturnCode  int                 `json:"rc"`
 	Message     string              `json:"msg"`
 	Stdout      string              `json:"stdout"`
 	Stderr      string              `json:"stderr"`
@@ -59,7 +59,7 @@ type AnsibleItemResult struct {
 	Skipped     bool              `json:"skipped"`
 	Destination string            `json:"dest"`
 	Diff        AnsibleResultDiff `json:"diff"`
-	ReturnCode  bool              `json:"rc"`
+	ReturnCode  int               `json:"rc"`
 	Message     string            `json:"msg"`
 	Stdout      string            `json:"stdout"`
 	Stderr      string            `json:"stderr"`
