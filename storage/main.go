@@ -51,14 +51,11 @@ func (s *Storage) Close() error {
 	return s.db.Close()
 }
 
-func queryExistsHelper(row *sql.Row) bool {
-	if err := row.Err(); err != nil {
-		return false
-	}
+func (s *Storage) queryExists(query string, args ...any) bool {
+	count := 0
 
-	var count int
-	if err := row.Scan(&count); err != nil {
-		return false
+	if err := s.db.Get(&count, query, args...); err != nil {
+		log.Warnf("exists error: %s", err)
 	}
 
 	return count > 0
@@ -104,9 +101,7 @@ func scanUser(s Scanner) (*structures.User, error) {
 }
 
 func (s *Storage) UserAnyExists() bool {
-	query := `select count(1) from users`
-	row := s.db.QueryRow(query)
-	return queryExistsHelper(row)
+	return s.queryExists(`select count(1) from users`)
 }
 
 func (s *Storage) UserExists(id string) bool {
@@ -114,8 +109,7 @@ func (s *Storage) UserExists(id string) bool {
 	          from users 
 	          where id = $1 
 	            and not coalesce(deleted, false)`
-	row := s.db.QueryRow(query, id)
-	return queryExistsHelper(row)
+	return s.queryExists(query, id)
 }
 
 func (s *Storage) UserExistsByLogin(login string) bool {
@@ -123,8 +117,7 @@ func (s *Storage) UserExistsByLogin(login string) bool {
               from users 
               where login = $1 
                 and not coalesce(deleted, false)`
-	row := s.db.QueryRow(query, login)
-	return queryExistsHelper(row)
+	return s.queryExists(query, login)
 }
 
 func (s *Storage) UserGet(id string) (*structures.User, error) {
@@ -355,8 +348,7 @@ func (s *Storage) ProjectExists(id string) bool {
               from projects 
               where id = $1 
                 and not coalesce(deleted, false)`
-	row := s.db.QueryRow(query, id)
-	return queryExistsHelper(row)
+	return s.queryExists(query, id)
 }
 
 func (s *Storage) ProjectExistsByName(name string) bool {
@@ -364,8 +356,7 @@ func (s *Storage) ProjectExistsByName(name string) bool {
               from projects 
               where name = $1 
                 and not coalesce(deleted, false)`
-	row := s.db.QueryRow(query, name)
-	return queryExistsHelper(row)
+	return s.queryExists(query, name)
 }
 
 func (s *Storage) ProjectGet(id string) (*structures.Project, error) {
@@ -637,8 +628,7 @@ func (s *Storage) ProjectHasLockedPlaybooks(id string) bool {
 		where project_id = $1 
 		  and not coalesce(deleted, false) 
 		  and locked`
-	row := s.db.QueryRow(query, id)
-	return queryExistsHelper(row)
+	return s.queryExists(query, id)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -650,8 +640,7 @@ func (s *Storage) ProjectUserAccessExists(projectId, userId string) bool {
               from projects_users_access 
               where project_id = $1 
                 and user_id = $2`
-	row := s.db.QueryRow(query, projectId, userId)
-	return queryExistsHelper(row)
+	return s.queryExists(query, projectId, userId)
 }
 
 func (s *Storage) ProjectUserAccessCreate(projectId, userId string) error {
