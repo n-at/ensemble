@@ -69,35 +69,26 @@ func queryExistsHelper(row *sql.Row) bool {
 ///////////////////////////////////////////////////////////////////////////////
 
 func (s *Storage) SessionCreate(userId string) (*structures.Session, error) {
-	id := NewId()
-	created := time.Now()
+	session := structures.Session{
+		Id:      NewId(),
+		UserId:  userId,
+		Created: time.Now(),
+	}
 
-	query := `insert into sessions (id, user_id, created) values ($1, $2, $3)`
-	_, err := s.db.Exec(query, id, userId, created)
-	if err != nil {
+	query := `insert into sessions (id, user_id, created) values (:id, :user_id, :created)`
+	if _, err := s.db.NamedExec(query, session); err != nil {
 		return nil, err
 	}
-
-	session := &structures.Session{
-		Id:      id,
-		UserId:  userId,
-		Created: created,
-	}
-	return session, nil
+	return &session, nil
 }
 
 func (s *Storage) SessionGet(id string) (*structures.Session, error) {
+	var session structures.Session
 	query := `select id, user_id, created from sessions where id = $1`
-	row := s.db.QueryRow(query, id)
-	if err := row.Err(); err != nil {
+	if err := s.db.Get(&session, query, id); err != nil {
 		return nil, err
 	}
-
-	session := &structures.Session{}
-	if err := row.Scan(&session.Id, &session.UserId, &session.Created); err != nil {
-		return nil, err
-	}
-	return session, nil
+	return &session, nil
 }
 
 ///////////////////////////////////////////////////////////////////////////////
