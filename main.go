@@ -133,7 +133,7 @@ func addPrivateKeys(s *storage.Storage, km *privatekeys.KeyManager) {
 
 	for _, key := range keys {
 		if err := km.AddKey(key); err != nil {
-			log.Errorf("unable lo add provate key %s: %s", key.Name, err)
+			log.Errorf("unable lo add private key %s: %s", key.Name, err)
 		}
 	}
 }
