@@ -253,7 +253,7 @@ func (m *Manager) updateProjectInfo(p *structures.Project) error {
 	if err != nil {
 		return err
 	}
-	p.InventoryList = inventories
+	p.Inventories = strings.Join(inventories, "|")
 
 	inventoryFound := false
 	for _, i := range inventories {
@@ -270,7 +270,7 @@ func (m *Manager) updateProjectInfo(p *structures.Project) error {
 	if err != nil {
 		return err
 	}
-	p.VariablesList = variables
+	p.VariablesAvailable = strings.Join(variables, "|")
 
 	variablesFound := false
 	for _, v := range variables {
@@ -287,7 +287,7 @@ func (m *Manager) updateProjectInfo(p *structures.Project) error {
 	if err != nil {
 		return err
 	}
-	p.CollectionsList = collections
+	p.Collections = strings.Join(collections, "|")
 
 	if err := m.store.ProjectUpdate(p); err != nil {
 		return err

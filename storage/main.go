@@ -7,7 +7,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
-	"strings"
 	"time"
 )
 
@@ -242,70 +241,52 @@ func (s *Storage) UserEnsureAdminExists() error {
 //Project
 ///////////////////////////////////////////////////////////////////////////////
 
-func (s *Storage) scanProject(scanner Scanner) (*structures.Project, error) {
-	var id, name, description, inventory, variables, vaultPassword sql.NullString
-	var repositoryUrl, repositoryLogin, repositoryPassword, repositoryBranch sql.NullString
-	var inventories, collections, variablesAvailable sql.NullString
-	var variablesMain, variablesVault sql.NullBool
-	if err := scanner.Scan(
-		&id,
-		&name,
-		&description,
-		&repositoryUrl,
-		&repositoryLogin,
-		&repositoryPassword,
-		&repositoryBranch,
-		&inventory,
-		&inventories,
-		&collections,
-		&variables,
-		&variablesAvailable,
-		&variablesMain,
-		&variablesVault,
-		&vaultPassword); err != nil {
-		return nil, err
-	}
-
-	var inventoryList, collectionsList, variablesList []string
-
-	if len(inventories.String) != 0 {
-		inventoryList = strings.Split(inventories.String, "|")
-	}
-	if len(variablesAvailable.String) != 0 {
-		variablesList = strings.Split(variablesAvailable.String, "|")
-	}
-	if len(collections.String) != 0 {
-		collectionsList = strings.Split(collections.String, "|")
-	}
-
-	repositoryPasswordDecrypted, err := DecryptString(s.config.Secret, repositoryPassword.String)
-	if err != nil {
-		return nil, err
-	}
-	vaultPasswordDecrypted, err := DecryptString(s.config.Secret, vaultPassword.String)
+func (s *Storage) projectDecrypt(p *structures.Project) (*structures.Project, error) {
+	repositoryPasswordDecrypted, err := DecryptString(s.config.Secret, p.RepositoryPassword)
 	if err != nil {
 		return nil, err
 	}
 
-	project := structures.Project{
-		Id:                 id.String,
-		Name:               name.String,
-		Description:        description.String,
-		RepositoryUrl:      repositoryUrl.String,
-		RepositoryLogin:    repositoryLogin.String,
-		RepositoryPassword: repositoryPasswordDecrypted,
-		RepositoryBranch:   repositoryBranch.String,
-		Inventory:          inventory.String,
-		InventoryList:      inventoryList,
-		CollectionsList:    collectionsList,
-		Variables:          variables.String,
-		VariablesList:      variablesList,
-		VariablesMain:      variablesMain.Bool,
-		VariablesVault:     variablesVault.Bool,
-		VaultPassword:      vaultPasswordDecrypted,
+	vaultPasswordDecrypted, err := DecryptString(s.config.Secret, p.VaultPassword)
+	if err != nil {
+		return nil, err
 	}
 
-	return &project, nil
+	p.RepositoryPassword = repositoryPasswordDecrypted
+	p.VaultPassword = vaultPasswordDecrypted
+	return p, nil
+}
+
+func (s *Storage) projectDecryptAll(projects []*structures.Project) []*structures.Project {
+	var decryptedProjects []*structures.Project
+
+	for _, project := range projects {
+		decrypted, err := s.projectDecrypt(project)
+		if err != nil {
+			log.Warnf("unable to decrypt project: %s", err)
+			continue
+		}
+		decryptedProjects = append(decryptedProjects, decrypted)
+	}
+
+	return decryptedProjects
+}
+
+func (s *Storage) projectEncrypt(p *structures.Project) (*structures.Project, error) {
+	repositoryPasswordEncrypted, err := EncryptString(s.config.Secret, p.RepositoryPassword)
+	if err != nil {
+		return nil, err
+	}
+
+	vaultPasswordEncrypted, err := EncryptString(s.config.Secret, p.VaultPassword)
+	if err != nil {
+		return nil, err
+	}
+
+	p.RepositoryPassword = repositoryPasswordEncrypted
+	p.VaultPassword = vaultPasswordEncrypted
+
+	return p, nil
 }
 
 func (s *Storage) ProjectExists(id string) bool {
@@ -325,87 +306,47 @@ func (s *Storage) ProjectExistsByName(name string) bool {
 }
 
 func (s *Storage) ProjectGet(id string) (*structures.Project, error) {
-	query := `select id, 
-                     name, 
-                     description, 
-                     repo_url, 
-                     repo_login,
-                     repo_password,
-                     repo_branch, 
-                     inventory, 
-                     inventory_list, 
+	query := `select id, name, description, 
+                     repo_url, repo_login, repo_password, repo_branch, 
+                     inventory, inventory_list, 
                      collections_list,
-                     variables, 
-                     variables_list,
-                     variables_main,
-                     variables_vault,
+                     variables, variables_list, variables_main, variables_vault,
                      vault_password
               from projects
               where id = $1 
                 and not coalesce(deleted, false)`
 
-	row := s.db.QueryRow(query, id)
-	if err := row.Err(); err != nil {
+	var project structures.Project
+	if err := s.db.Get(&project, query, id); err != nil {
 		return nil, err
 	}
-
-	return s.scanProject(row)
+	return s.projectDecrypt(&project)
 }
 
 func (s *Storage) ProjectGetAll() ([]*structures.Project, error) {
-	query := `select id, 
-                     name, 
-                     description, 
-                     repo_url, 
-                     repo_login,
-                     repo_password,
-                     repo_branch, 
-                     inventory, 
-                     inventory_list, 
+	query := `select id, name, description, 
+                     repo_url, repo_login, repo_password, repo_branch, 
+                     inventory, inventory_list, 
                      collections_list,
-                     variables, 
-                     variables_list,
-                     variables_main,
-                     variables_vault,
+                     variables, variables_list, variables_main, variables_vault,
                      vault_password
               from projects
               where not coalesce(deleted, false)
               order by name`
 
-	rows, err := s.db.Query(query)
-	if err != nil {
+	var projects []*structures.Project
+	if err := s.db.Select(&projects, query); err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	var projects []*structures.Project
-	for rows.Next() {
-		project, err := s.scanProject(rows)
-		if err != nil {
-			log.Warnf("unable to read project: %s", err)
-			continue
-		}
-		projects = append(projects, project)
-	}
-
-	return projects, nil
+	return s.projectDecryptAll(projects), nil
 }
 
 func (s *Storage) ProjectGetByUser(userId string) ([]*structures.Project, error) {
-	query := `select id, 
-                     name, 
-                     description, 
-                     repo_url, 
-                     repo_login,
-                     repo_password,
-                     repo_branch, 
-                     inventory, 
-                     inventory_list, 
+	query := `select id, name, description, 
+                     repo_url, repo_login, repo_password, repo_branch, 
+                     inventory, inventory_list, 
                      collections_list,
-                     variables, 
-                     variables_list,
-                     variables_main,
-                     variables_vault,
+                     variables, variables_list, variables_main, variables_vault,
                      vault_password
               from projects 
                 left join projects_users_access on (projects_users_access.project_id = projects.id) 
@@ -413,22 +354,11 @@ func (s *Storage) ProjectGetByUser(userId string) ([]*structures.Project, error)
                 and projects_users_access.user_id = $1
               order by name`
 
-	rows, err := s.db.Query(query, userId)
-	if err != nil {
+	var projects []*structures.Project
+	if err := s.db.Select(&projects, query, userId); err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	var projects []*structures.Project
-	for rows.Next() {
-		project, err := s.scanProject(rows)
-		if err != nil {
-			log.Warnf("unable to read project: %s", err)
-		}
-		projects = append(projects, project)
-	}
-
-	return projects, nil
+	return s.projectDecryptAll(projects), nil
 }
 
 func (s *Storage) ProjectInsert(project *structures.Project) error {
@@ -451,56 +381,33 @@ func (s *Storage) ProjectInsert(project *structures.Project) error {
 		project.RepositoryBranch = structures.ProjectDefaultBranchName
 	}
 
-	query := `
-		insert into projects (id, 
-							  name, 
-							  description, 
-							  repo_url, 
-		                      repo_login,
-		                      repo_password,
-							  repo_branch, 
-							  inventory, 
-							  inventory_list, 
+	query := `insert into projects (id, name, description, 
+							  repo_url, repo_login, repo_password, repo_branch, 
+							  inventory,  inventory_list, 
 							  collections_list,
-							  variables, 
-							  variables_list,
-							  variables_main,
-							  variables_vault,
-							  vault_password
-		                      ) 
-		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`
+							  variables, variables_list, variables_main, variables_vault,
+							  vault_password) 
+			   values (:id, :name, :description, 
+					   :repo_url, :repo_login, :repo_password, :repo_branch, 
+					   :inventory, :inventory_list, 
+					   :collections_list,
+					   :variables, :variables_list, :variables_main, :variables_vault,
+					   :vault_password)`
 
-	inventoryList := strings.Join(project.InventoryList, "|")
-	variablesList := strings.Join(project.VariablesList, "|")
-	collectionsList := strings.Join(project.CollectionsList, "|")
+	repositoryPassword := project.RepositoryPassword
+	vaultPassword := project.VaultPassword
+	defer func() {
+		project.RepositoryPassword = repositoryPassword
+		project.VaultPassword = vaultPassword
+	}()
 
-	repositoryPasswordEncrypted, err := EncryptString(s.config.Secret, project.RepositoryPassword)
-	if err != nil {
+	if _, err := s.projectEncrypt(project); err != nil {
 		return err
 	}
-	vaultPasswordEncrypted, err := EncryptString(s.config.Secret, project.VaultPassword)
-	if err != nil {
+	if _, err := s.db.NamedExec(query, project); err != nil {
 		return err
 	}
-
-	_, err = s.db.Exec(
-		query,
-		project.Id,
-		project.Name,
-		project.Description,
-		project.RepositoryUrl,
-		project.RepositoryLogin,
-		repositoryPasswordEncrypted,
-		project.RepositoryBranch,
-		project.Inventory,
-		inventoryList,
-		collectionsList,
-		project.Variables,
-		variablesList,
-		project.VariablesMain,
-		project.VariablesVault,
-		vaultPasswordEncrypted)
-	return err
+	return nil
 }
 
 func (s *Storage) ProjectUpdate(project *structures.Project) error {
@@ -530,54 +437,29 @@ func (s *Storage) ProjectUpdate(project *structures.Project) error {
 
 	query := `
 		update projects set 
-			name = $1, 
-			description = $2, 
-			repo_url = $3, 
-			repo_login = $4,
-			repo_password = $5,
-			repo_branch = $6,
-			inventory = $7,
-			inventory_list = $8,
-			variables = $9,
-			variables_list = $10,
-			vault_password = $11,
-			collections_list = $12,
-			variables_main = $13,
-			variables_vault = $14,
+			name = :name, description = :description, 
+			repo_url = :repo_url, repo_login = :repo_login, repo_password = :repo_password, repo_branch = :repo_branch,
+			inventory = :inventory, inventory_list = :inventory_list,
+			collections_list = :collections_list,
+			variables = :variables, variables_list = :variables_list, variables_main = :variables_main, variables_vault = :variables_vault,
+			vault_password = :vault_password, 
 			deleted = false
-		where id = $15`
+		where id = :id`
 
-	inventoryList := strings.Join(project.InventoryList, "|")
-	variablesList := strings.Join(project.VariablesList, "|")
-	collectionsList := strings.Join(project.CollectionsList, "|")
+	repositoryPassword := project.RepositoryPassword
+	vaultPassword := project.VaultPassword
+	defer func() {
+		project.RepositoryPassword = repositoryPassword
+		project.VaultPassword = vaultPassword
+	}()
 
-	repositoryPasswordEncrypted, err := EncryptString(s.config.Secret, project.RepositoryPassword)
-	if err != nil {
+	if _, err := s.projectEncrypt(project); err != nil {
 		return err
 	}
-	vaultPasswordEncrypted, err := EncryptString(s.config.Secret, project.VaultPassword)
-	if err != nil {
+	if _, err := s.db.NamedExec(query, project); err != nil {
 		return err
 	}
-
-	_, err = s.db.Exec(
-		query,
-		project.Name,
-		project.Description,
-		project.RepositoryUrl,
-		project.RepositoryLogin,
-		repositoryPasswordEncrypted,
-		project.RepositoryBranch,
-		project.Inventory,
-		inventoryList,
-		project.Variables,
-		variablesList,
-		vaultPasswordEncrypted,
-		collectionsList,
-		project.VariablesMain,
-		project.VariablesVault,
-		project.Id)
-	return err
+	return nil
 }
 
 func (s *Storage) ProjectDelete(id string) error {

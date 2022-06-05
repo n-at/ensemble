@@ -42,7 +42,7 @@ func (r *Runner) Run(project *structures.Project, playbook *structures.Playbook,
 	if err := r.installCollection("ansible.posix"); err != nil {
 		return nil, err
 	}
-	for _, collection := range project.CollectionsList {
+	for _, collection := range project.CollectionsList() {
 		if len(strings.TrimSpace(collection)) == 0 {
 			continue
 		}

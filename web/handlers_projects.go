@@ -168,7 +168,7 @@ func (s *Server) projectEditSubmit(c echo.Context) error {
 	}
 
 	inventoryFound := false
-	for _, inventory := range project.InventoryList {
+	for _, inventory := range project.InventoryList() {
 		if inventory == project.Inventory {
 			inventoryFound = true
 			break
@@ -179,7 +179,7 @@ func (s *Server) projectEditSubmit(c echo.Context) error {
 	}
 
 	variablesFound := false
-	for _, variables := range project.VariablesList {
+	for _, variables := range project.VariablesList() {
 		if variables == project.Variables {
 			variablesFound = true
 			break
