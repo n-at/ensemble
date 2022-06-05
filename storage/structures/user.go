@@ -6,10 +6,10 @@ const (
 )
 
 type User struct {
-	Id       string
-	Login    string
-	Password string
-	Role     int
+	Id       string `db:"id"`
+	Login    string `db:"login"`
+	Password string `db:"password"`
+	Role     int    `db:"role"`
 }
 
 func (u *User) CanViewAllProjects() bool {

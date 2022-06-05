@@ -92,14 +92,6 @@ func (s *Storage) SessionGet(id string) (*structures.Session, error) {
 //User
 ///////////////////////////////////////////////////////////////////////////////
 
-func scanUser(s Scanner) (*structures.User, error) {
-	var user structures.User
-	if err := s.Scan(&user.Id, &user.Login, &user.Password, &user.Role); err != nil {
-		return nil, err
-	}
-	return &user, nil
-}
-
 func (s *Storage) UserAnyExists() bool {
 	return s.queryExists(`select count(1) from users`)
 }
@@ -121,61 +113,39 @@ func (s *Storage) UserExistsByLogin(login string) bool {
 }
 
 func (s *Storage) UserGet(id string) (*structures.User, error) {
-	query := `select id, 
-                     login, 
-                     password, 
-                     role 
+	query := `select id, login, password, role 
               from users 
               where id = $1 
                 and not coalesce(deleted, false)`
-	row := s.db.QueryRow(query, id)
-	if err := row.Err(); err != nil {
+	var user structures.User
+	if err := s.db.Get(&user, query, id); err != nil {
 		return nil, err
 	}
-	return scanUser(row)
+	return &user, nil
 }
 
 func (s *Storage) UserGetByLogin(login string) (*structures.User, error) {
-	query := `select id, 
-                     login, 
-                     password, 
-                     role 
+	query := `select id, login, password, role 
               from users 
               where login = $1 
-                and not coalesce(deleted, false)`
-	row := s.db.QueryRow(query, login)
-	if err := row.Err(); err != nil {
+                and not coalesce(deleted, false)
+	          limit 1`
+	var user structures.User
+	if err := s.db.Get(&user, query, login); err != nil {
 		return nil, err
 	}
-	return scanUser(row)
+	return &user, nil
 }
 
 func (s *Storage) UserGetAll() ([]*structures.User, error) {
-	query := `select id, 
-                     login, 
-                     password, 
-                     role 
+	query := `select id, login, password, role 
               from users 
               where not coalesce(deleted, false) 
               order by login`
-
-	rows, err := s.db.Query(query)
-	if err != nil {
+	var users []*structures.User
+	if err := s.db.Select(&users, query); err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	var users []*structures.User
-
-	for rows.Next() {
-		user, err := scanUser(rows)
-		if err != nil {
-			log.Warnf("unable to read user: %s", err)
-			continue
-		}
-		users = append(users, user)
-	}
-
 	return users, nil
 }
 
@@ -200,9 +170,8 @@ func (s *Storage) UserInsert(user *structures.User) error {
 	}
 
 	query := `insert into users (id, login, password, role) 
-              values ($1, $2, $3, $4)`
-
-	_, err := s.db.Exec(query, user.Id, user.Login, user.Password, user.Role)
+              values (:id, :login, :password, :role)`
+	_, err := s.db.NamedExec(query, user)
 	return err
 }
 
@@ -232,13 +201,9 @@ func (s *Storage) UserUpdate(user *structures.User) error {
 	}
 
 	query := `update users 
-              set login = $1, 
-                  password = $2, 
-                  role = $3, 
-                  deleted = false 
-              where id = $4`
-
-	_, err = s.db.Exec(query, user.Login, user.Password, user.Role, user.Id)
+              set login = :login, password = :password, role = :role, deleted = false 
+              where id = :id`
+	_, err = s.db.NamedExec(query, user)
 	return err
 }
 
