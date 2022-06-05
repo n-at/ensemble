@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"ensemble/storage/structures"
 	"errors"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
 	"strings"
@@ -17,7 +18,7 @@ type Configuration struct {
 
 type Storage struct {
 	config Configuration
-	db     *sql.DB
+	db     *sqlx.DB
 }
 
 type Scanner interface {
@@ -27,7 +28,7 @@ type Scanner interface {
 ///////////////////////////////////////////////////////////////////////////////
 
 func New(configuration Configuration) (*Storage, error) {
-	db, err := sql.Open("postgres", configuration.Url)
+	db, err := sqlx.Open("postgres", configuration.Url)
 	if err != nil {
 		return nil, err
 	}

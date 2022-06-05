@@ -1,8 +1,8 @@
 package storage
 
 import (
-	"database/sql"
 	"errors"
+	"github.com/jmoiron/sqlx"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -13,13 +13,13 @@ type Migration struct {
 }
 
 type Migrator struct {
-	db         *sql.DB
+	db         *sqlx.DB
 	migrations []Migration
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-func NewMigrator(db *sql.DB) (*Migrator, error) {
+func NewMigrator(db *sqlx.DB) (*Migrator, error) {
 	if db == nil {
 		return nil, errors.New("nil database")
 	}
@@ -274,12 +274,27 @@ func (m *Migrator) exists(version int) (bool, error) {
 func (m *Migrator) apply(migration Migration) error {
 	log.Infof("applying migration %d: %s", migration.version, migration.name)
 
-	if _, err := m.db.Exec(migration.query); err != nil {
+	tx, err := m.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	if _, err := tx.Exec(migration.query); err != nil {
+		if err := tx.Rollback(); err != nil {
+			log.Warnf("rollback error: %s", err)
+		}
 		return err
 	}
 
 	query := `insert into __migrations (version, name) values ($1, $2)`
-	if _, err := m.db.Exec(query, migration.version, migration.name); err != nil {
+	if _, err := tx.Exec(query, migration.version, migration.name); err != nil {
+		if err := tx.Rollback(); err != nil {
+			log.Warnf("rollback error: %s", err)
+		}
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
 		return err
 	}
 

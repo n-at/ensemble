@@ -12,6 +12,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.12.0
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
+	github.com/jmoiron/sqlx v1.3.5
 )
 
 require (
