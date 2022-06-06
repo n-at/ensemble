@@ -570,26 +570,17 @@ func (s *Storage) ProjectUpdateDelete(id string) error {
 //Playbooks
 ///////////////////////////////////////////////////////////////////////////////
 
-func scanPlaybook(s Scanner) (*structures.Playbook, error) {
-	var playbook structures.Playbook
-	if err := s.Scan(&playbook.Id, &playbook.ProjectId, &playbook.Filename, &playbook.Name, &playbook.Description, &playbook.Locked); err != nil {
-		return nil, err
-	}
-	return &playbook, nil
-}
-
 func (s *Storage) PlaybookGet(id string) (*structures.Playbook, error) {
 	query := `select id, project_id, filename, name, description, locked 
               from playbooks 
               where id = $1 
                 and not coalesce(deleted, false)`
 
-	row := s.db.QueryRow(query, id)
-	if err := row.Err(); err != nil {
+	var playbook structures.Playbook
+	if err := s.db.Get(&playbook, query, id); err != nil {
 		return nil, err
 	}
-
-	return scanPlaybook(row)
+	return &playbook, nil
 }
 
 func (s *Storage) PlaybookGetByProject(projectId string) ([]*structures.Playbook, error) {
@@ -599,23 +590,10 @@ func (s *Storage) PlaybookGetByProject(projectId string) ([]*structures.Playbook
                 and not coalesce(deleted, false)
               order by name, filename`
 
-	rows, err := s.db.Query(query, projectId)
-	if err != nil {
+	var playbooks []*structures.Playbook
+	if err := s.db.Select(&playbooks, query, projectId); err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	var playbooks []*structures.Playbook
-
-	for rows.Next() {
-		playbook, err := scanPlaybook(rows)
-		if err != nil {
-			log.Warnf("unable to read playbook: %s", err)
-			continue
-		}
-		playbooks = append(playbooks, playbook)
-	}
-
 	return playbooks, nil
 }
 
@@ -634,16 +612,8 @@ func (s *Storage) PlaybookInsert(playbook *structures.Playbook) error {
 	}
 
 	query := `insert into playbooks (id, project_id, filename, name, description, locked) 
-              values ($1, $2, $3, $4, $5, $6)`
-
-	_, err := s.db.Exec(
-		query,
-		playbook.Id,
-		playbook.ProjectId,
-		playbook.Filename,
-		playbook.Name,
-		playbook.Description,
-		playbook.Locked)
+              values (:id, :project_id, :filename, :name, :description, :locked)`
+	_, err := s.db.NamedExec(query, playbook)
 	return err
 }
 
@@ -673,14 +643,9 @@ func (s *Storage) PlaybookUpdate(playbook *structures.Playbook) error {
 	}
 
 	query := `update playbooks 
-              set filename = $1, 
-                  name = $2, 
-                  description = $3, 
-                  locked = $4, 
-                  deleted = false 
-              where id = $5`
-
-	_, err = s.db.Exec(query, playbook.Filename, playbook.Name, playbook.Description, playbook.Locked, playbook.Id)
+              set filename = :filename, name = :name, description = :description, locked = :locked, deleted = false 
+              where id = :id`
+	_, err = s.db.NamedExec(query, playbook)
 	return err
 }
 
