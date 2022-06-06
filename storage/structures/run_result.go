@@ -1,8 +1,8 @@
 package structures
 
 type RunResult struct {
-	Id     string
-	RunId  string
-	Output string
-	Error  string
+	Id     string `db:"id"`
+	RunId  string `db:"run_id"`
+	Output string `db:"output"`
+	Error  string `db:"error"`
 }
