@@ -7,10 +7,10 @@ const (
 )
 
 type ProjectUpdate struct {
-	Id        string
-	ProjectId string
-	Date      time.Time
-	Success   bool
-	Revision  string
-	Log       string
+	Id        string    `db:"id"`
+	ProjectId string    `db:"project_id"`
+	Date      time.Time `db:"date"`
+	Success   bool      `db:"success"`
+	Revision  string    `db:"revision"`
+	Log       string    `db:"log"`
 }

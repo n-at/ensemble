@@ -501,83 +501,46 @@ func (s *Storage) ProjectUserAccessDelete(projectId, userId string) error {
 //Project Updates
 ///////////////////////////////////////////////////////////////////////////////
 
-func scanProjectUpdate(s Scanner) (*structures.ProjectUpdate, error) {
+func (s *Storage) ProjectUpdateGet(id string) (*structures.ProjectUpdate, error) {
+	query := `select id, project_id, date, success, revision, log 
+              from project_updates 
+              where id = $1 
+                and not coalesce(deleted, false)`
+
 	var update structures.ProjectUpdate
-	if err := s.Scan(&update.Id, &update.ProjectId, &update.Date, &update.Success, &update.Revision, &update.Log); err != nil {
+	if err := s.db.Get(&update, query, id); err != nil {
 		return nil, err
 	}
 	return &update, nil
 }
 
-func (s *Storage) ProjectUpdateGet(id string) (*structures.ProjectUpdate, error) {
-	query := `select id, 
-	                 project_id, 
-                     date, 
-                     success,
-                     revision, 
-                     log 
-              from project_updates 
-              where id = $1 
-                and not coalesce(deleted, false)`
-
-	row := s.db.QueryRow(query, id)
-	if err := row.Err(); err != nil {
-		return nil, err
-	}
-	return scanProjectUpdate(row)
-}
-
 func (s *Storage) ProjectUpdateGetByProject(projectId string) ([]*structures.ProjectUpdate, error) {
-	query := `select id, 
-	                 project_id, 
-                     date, 
-                     success,
-                     revision, 
-                     log 
+	query := `select id, project_id, date, success, revision,  log 
               from project_updates 
               where project_id = $1 
                 and not coalesce(deleted, false)
 		      order by date desc`
 
-	rows, err := s.db.Query(query, projectId)
-	if err != nil {
+	var updates []*structures.ProjectUpdate
+	if err := s.db.Select(&updates, query, projectId); err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	var updates []*structures.ProjectUpdate
-
-	for rows.Next() {
-		update, err := scanProjectUpdate(rows)
-		if err != nil {
-			log.Warnf("unable to read project update: %s", err)
-			continue
-		}
-		updates = append(updates, update)
-	}
-
 	return updates, nil
 }
 
 func (s *Storage) ProjectUpdateGetProjectLatest(projectId string) (*structures.ProjectUpdate, error) {
-	query := `select id, 
-	                 project_id, 
-                     date, 
-                     success,
-                     revision, 
-                     log 
+	query := `select id, project_id, date, success, revision, log 
               from project_updates 
               where project_id = $1 
                 and not coalesce(deleted, false)
 		      order by date desc
 			  limit 1`
 
-	row := s.db.QueryRow(query, projectId)
-	if err := row.Err(); err != nil {
+	var update structures.ProjectUpdate
+	if err := s.db.Get(&update, query, projectId); err != nil {
 		return nil, err
 	}
-
-	return scanProjectUpdate(row)
+	return &update, nil
 }
 
 func (s *Storage) ProjectUpdateInsert(update *structures.ProjectUpdate) error {
@@ -592,9 +555,8 @@ func (s *Storage) ProjectUpdateInsert(update *structures.ProjectUpdate) error {
 	}
 
 	query := `insert into project_updates (id, project_id, date, success, revision, log) 
-              values ($1, $2, $3, $4, $5, $6)`
-
-	_, err := s.db.Exec(query, update.Id, update.ProjectId, update.Date, update.Success, update.Revision, update.Log)
+              values (:id, :project_id, :date, :success, :revision, :log)`
+	_, err := s.db.NamedExec(query, update)
 	return err
 }
 
