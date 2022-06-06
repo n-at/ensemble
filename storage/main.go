@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"database/sql"
 	"ensemble/storage/structures"
 	"errors"
 	"github.com/jmoiron/sqlx"
@@ -841,22 +840,37 @@ func (s *Storage) RunResultDelete(id string) error {
 //Keys
 ///////////////////////////////////////////////////////////////////////////////
 
-func (s *Storage) scanKey(scanner Scanner) (*structures.Key, error) {
-	var id, name, password sql.NullString
-	if err := scanner.Scan(&id, &name, &password); err != nil {
-		return nil, err
-	}
-
-	passwordDecrypted, err := DecryptString(s.config.Secret, password.String)
+func (s *Storage) keyDecrypt(k *structures.Key) (*structures.Key, error) {
+	passwordDecrypted, err := DecryptString(s.config.Secret, k.Password)
 	if err != nil {
 		return nil, err
 	}
+	k.Password = passwordDecrypted
+	return k, nil
+}
 
-	return &structures.Key{
-		Id:       id.String,
-		Name:     name.String,
-		Password: passwordDecrypted,
-	}, nil
+func (s *Storage) keyDecryptAll(keys []*structures.Key) []*structures.Key {
+	var decryptedKeys []*structures.Key
+
+	for _, key := range keys {
+		decrypted, err := s.keyDecrypt(key)
+		if err != nil {
+			log.Warnf("unable to decrypt key: %s", err)
+			continue
+		}
+		decryptedKeys = append(decryptedKeys, decrypted)
+	}
+
+	return decryptedKeys
+}
+
+func (s *Storage) keyEncrypt(k *structures.Key) (*structures.Key, error) {
+	passwordEncrypted, err := EncryptPassword(k.Password)
+	if err != nil {
+		return nil, err
+	}
+	k.Password = passwordEncrypted
+	return k, nil
 }
 
 func (s *Storage) KeyGetAll() ([]*structures.Key, error) {
@@ -864,39 +878,26 @@ func (s *Storage) KeyGetAll() ([]*structures.Key, error) {
 	          from keys 
 	          where not coalesce(deleted, false) 
 	          order by name`
-	rows, err := s.db.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
 
 	var keys []*structures.Key
-
-	for rows.Next() {
-		key, err := s.scanKey(rows)
-		if err != nil {
-			log.Warnf("unable to read key: %s", err)
-			continue
-		}
-		keys = append(keys, key)
+	if err := s.db.Select(&keys, query); err != nil {
+		return nil, err
 	}
-
-	return keys, nil
+	return s.keyDecryptAll(keys), nil
 }
 
 func (s *Storage) KeyGet(id string) (*structures.Key, error) {
 	query := `select id, name, password
 	          from keys 
-	          where id = $1 and 
-				not coalesce(deleted, false) 
+	          where id = $1 
+	            and not coalesce(deleted, false) 
 	          order by name`
 
-	row := s.db.QueryRow(query, id)
-	if err := row.Err(); err != nil {
+	var key structures.Key
+	if err := s.db.Get(&key, query, id); err != nil {
 		return nil, err
 	}
-
-	return s.scanKey(row)
+	return s.keyDecrypt(&key)
 }
 
 func (s *Storage) KeyInsert(key *structures.Key) error {
@@ -910,15 +911,15 @@ func (s *Storage) KeyInsert(key *structures.Key) error {
 		key.Id = NewId()
 	}
 
-	query := `insert into keys (id, name, password) values ($1, $2, $3)`
-
-	passwordEncrypted, err := EncryptString(s.config.Secret, key.Password)
-	if err != nil {
+	query := `insert into keys (id, name, password) values (:id, :name, :password)`
+	keyToSave := *key
+	if _, err := s.keyEncrypt(&keyToSave); err != nil {
 		return err
 	}
-
-	_, err = s.db.Exec(query, key.Id, key.Name, passwordEncrypted)
-	return err
+	if _, err := s.db.NamedExec(query, keyToSave); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *Storage) KeyDelete(id string) error {
