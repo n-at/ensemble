@@ -394,17 +394,11 @@ func (s *Storage) ProjectInsert(project *structures.Project) error {
 					   :variables, :variables_list, :variables_main, :variables_vault,
 					   :vault_password)`
 
-	repositoryPassword := project.RepositoryPassword
-	vaultPassword := project.VaultPassword
-	defer func() {
-		project.RepositoryPassword = repositoryPassword
-		project.VaultPassword = vaultPassword
-	}()
-
-	if _, err := s.projectEncrypt(project); err != nil {
+	projectToSave := *project
+	if _, err := s.projectEncrypt(&projectToSave); err != nil {
 		return err
 	}
-	if _, err := s.db.NamedExec(query, project); err != nil {
+	if _, err := s.db.NamedExec(query, projectToSave); err != nil {
 		return err
 	}
 	return nil
@@ -446,17 +440,11 @@ func (s *Storage) ProjectUpdate(project *structures.Project) error {
 			deleted = false
 		where id = :id`
 
-	repositoryPassword := project.RepositoryPassword
-	vaultPassword := project.VaultPassword
-	defer func() {
-		project.RepositoryPassword = repositoryPassword
-		project.VaultPassword = vaultPassword
-	}()
-
-	if _, err := s.projectEncrypt(project); err != nil {
+	projectToSave := *project
+	if _, err := s.projectEncrypt(&projectToSave); err != nil {
 		return err
 	}
-	if _, err := s.db.NamedExec(query, project); err != nil {
+	if _, err := s.db.NamedExec(query, projectToSave); err != nil {
 		return err
 	}
 	return nil
