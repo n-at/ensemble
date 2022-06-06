@@ -665,106 +665,45 @@ func (s *Storage) PlaybookLock(id string, value bool) error {
 //Playbook Runs
 ///////////////////////////////////////////////////////////////////////////////
 
-func scanPlaybookRun(s Scanner) (*structures.PlaybookRun, error) {
-	var id, playbookId, userId, inventoryFile, variablesFile sql.NullString
-	var mode, result sql.NullInt32
-	var startTime, finishTime sql.NullTime
-
-	if err := s.Scan(&id, &playbookId, &userId, &mode, &startTime, &finishTime, &result, &inventoryFile, &variablesFile); err != nil {
-		return nil, err
-	}
-
-	return &structures.PlaybookRun{
-		Id:            id.String,
-		PlaybookId:    playbookId.String,
-		UserId:        userId.String,
-		Mode:          int(mode.Int32),
-		StartTime:     startTime.Time,
-		FinishTime:    finishTime.Time,
-		Result:        int(result.Int32),
-		InventoryFile: inventoryFile.String,
-		VariablesFile: variablesFile.String,
-	}, nil
-}
-
 func (s *Storage) PlaybookRunGet(id string) (*structures.PlaybookRun, error) {
-	query := `select id, 
-                     playbook_id, 
-                     user_id, 
-                     mode, 
-                     start_time, 
-                     finish_time, 
-                     result,
-                     inventory_file,
-                     variables_file
+	query := `select id, playbook_id, user_id, mode, start_time, finish_time, result, inventory_file, variables_file
               from playbook_runs 
               where id = $1 
                 and not coalesce(deleted, false)`
 
-	row := s.db.QueryRow(query, id)
-	if err := row.Err(); err != nil {
+	var run structures.PlaybookRun
+	if err := s.db.Get(&run, query, id); err != nil {
 		return nil, err
 	}
-
-	return scanPlaybookRun(row)
+	return &run, nil
 }
 
 func (s *Storage) PlaybookRunGetLatest(playbookId string) (*structures.PlaybookRun, error) {
-	query := `select id, 
-                     playbook_id, 
-                     user_id, 
-                     mode, 
-                     start_time, 
-                     finish_time, 
-                     result,
-                     inventory_file,
-                     variables_file
+	query := `select id, playbook_id, user_id, mode, start_time, finish_time, result, inventory_file, variables_file
               from playbook_runs 
               where playbook_id = $1 
                 and not coalesce(deleted, false)
               order by start_time desc
               limit 1`
 
-	row := s.db.QueryRow(query, playbookId)
-	if err := row.Err(); err != nil {
+	var run structures.PlaybookRun
+	if err := s.db.Get(&run, query, playbookId); err != nil {
 		return nil, err
 	}
-
-	return scanPlaybookRun(row)
+	return &run, nil
 }
 
 func (s *Storage) PlaybookRunGetByPlaybook(playbookId string) ([]*structures.PlaybookRun, error) {
-	query := `select id, 
-                     playbook_id, 
-                     user_id, 
-                     mode, 
-                     start_time, 
-                     finish_time, 
-                     result,
-                     inventory_file,
-                     variables_file
+	query := `select id, playbook_id, user_id, mode, start_time, finish_time, result, inventory_file, variables_file
               from playbook_runs 
               where playbook_id = $1 
                 and not coalesce(deleted, false)
               order by start_time desc`
 
-	rows, err := s.db.Query(query, playbookId)
-	if err != nil {
+	var runs []*structures.PlaybookRun
+	if err := s.db.Select(&runs, query, playbookId); err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	var runs []*structures.PlaybookRun
-
-	for rows.Next() {
-		run, err := scanPlaybookRun(rows)
-		if err != nil {
-			log.Warnf("unable to read playbook run: %s", err)
-			continue
-		}
-		runs = append(runs, run)
-	}
-
 	return runs, nil
 }
 
@@ -783,19 +722,8 @@ func (s *Storage) PlaybookRunInsert(run *structures.PlaybookRun) error {
 	}
 
 	query := `insert into playbook_runs (id, playbook_id, user_id, mode, start_time, finish_time, result, inventory_file, variables_file)
-              values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`
-
-	_, err := s.db.Exec(
-		query,
-		run.Id,
-		run.PlaybookId,
-		run.UserId,
-		run.Mode,
-		run.StartTime,
-		run.FinishTime,
-		run.Result,
-		run.InventoryFile,
-		run.VariablesFile)
+              values (:id, :playbook_id, :user_id, :mode, :start_time, :finish_time, :result, :inventory_file, :variables_file)`
+	_, err := s.db.NamedExec(query, run)
 	return err
 }
 
@@ -828,16 +756,10 @@ func (s *Storage) PlaybookRunUpdate(run *structures.PlaybookRun) error {
 	}
 
 	query := `update playbook_runs 
-              set mode = $1, 
-                  start_time = $2, 
-                  finish_time = $3, 
-                  result = $4, 
-                  deleted = false,
-                  inventory_file = $5,
-                  variables_file = $6
-              where id = $7`
-
-	_, err = s.db.Exec(query, run.Mode, run.StartTime, run.FinishTime, run.Result, run.InventoryFile, run.VariablesFile, run.Id)
+              set mode = :mode, start_time = :start_time, finish_time = :finish_time, result = :result, 
+                  inventory_file = :inventory_file, variables_file = :variables_file, deleted = false
+              where id = :id`
+	_, err = s.db.NamedExec(query, run)
 	return err
 }
 

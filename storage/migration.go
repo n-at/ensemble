@@ -223,6 +223,14 @@ var migrations = []Migration{
 			name     text        not null,
 			password text
 		)`,
+	}, {
+		version: 30,
+		name:    "playbook_runs.inventory_file null",
+		query:   `update playbook_runs set inventory_file='' where inventory_file is null`,
+	}, {
+		version: 31,
+		name:    "playbook_runs.variables_file null",
+		query:   `update playbook_runs set variables_file='' where variables_file is null`,
 	},
 }
 

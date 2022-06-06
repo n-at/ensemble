@@ -13,15 +13,15 @@ const (
 )
 
 type PlaybookRun struct {
-	Id            string
-	PlaybookId    string
-	UserId        string
-	Mode          int
-	StartTime     time.Time
-	FinishTime    time.Time
-	Result        int
-	InventoryFile string
-	VariablesFile string
+	Id            string    `db:"id"`
+	PlaybookId    string    `db:"playbook_id"`
+	UserId        string    `db:"user_id"`
+	Mode          int       `db:"mode"`
+	StartTime     time.Time `db:"start_time"`
+	FinishTime    time.Time `db:"finish_time"`
+	Result        int       `db:"result"`
+	InventoryFile string    `db:"inventory_file"`
+	VariablesFile string    `db:"variables_file"`
 }
 
 func (r *PlaybookRun) RunTime() time.Duration {
