@@ -55,6 +55,9 @@ func New(configuration Configuration, store *storage.Storage, manager *repositor
 	s.e.POST("/login", s.loginSubmit)
 	s.e.GET("/logout", s.logout)
 
+	//misc
+	s.e.GET("/version", s.version)
+
 	//user profile
 	profile := s.e.Group("/profile")
 	profile.Use(s.authenticationRequiredMiddleware)
