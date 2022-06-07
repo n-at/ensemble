@@ -5,8 +5,11 @@ h2 {
     font-size: 1.5em;
 }
 
+.dark .list-group-hover .list-group-item:hover {
+    background-color: rgba(255, 255, 255, .05);
+}
 .list-group-hover .list-group-item:hover {
-    background-color: #f5f5f5;
+    background-color: rgba(0, 0, 0, .05);
 }
 
 .card .card-body .card-body-collapse {
@@ -84,6 +87,13 @@ h2 {
     z-index:10000;
 }
 
+.dark .spinner-cog {
+    background-color: rgb(34, 34, 34);;
+}
+.dark .hole {
+    background-color: rgb(34, 34, 34);;
+}
+
 .spoke {
     background-color: #6c757d;
     position: absolute;
@@ -123,7 +133,7 @@ h2 {
     animation-delay:.19s;
     animation: spin2 5s infinite linear;
     margin-top: 130px;
-    margin-left: 0px;
+    margin-left: 0;
 }
 .cog + .cog + .cog {
     animation: spin 5s infinite linear;

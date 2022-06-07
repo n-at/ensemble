@@ -19,7 +19,7 @@
     </div>
     <div class="col-2 text-nowrap">
         {% if run.Mode == 1 %}
-            <span class="text-secondary">
+            <span class="text-success">
                 <i class="bi bi-file-diff"></i> Check
             </span>
         {% elif run.Mode == 2 %}
@@ -27,21 +27,21 @@
                 <i class="bi bi-play-fill"></i> Execute
             </span>
         {% elif run.Mode == 3 %}
-            <span class="text-secondary">
+            <span class="text-success">
                 <i class="bi bi-spellcheck"></i> Syntax
             </span>
         {% endif %}
     </div>
     <div class="col-4 text-end">
         {% if not run.StartTime.IsZero() %}
-            <span class="text-secondary" title="Start time">
+            <span title="Start time">
                 <i class="bi bi-clock-history"></i> {{run.StartTime.Format("02.01.2006 15:04:05")}}
             </span>
         {% endif %}
     </div>
     <div class="col-4 text-end">
         {% if not run.FinishTime.IsZero() %}
-            <span class="text-secondary" title="Duration">
+            <span title="Duration">
                 <i class="bi bi-clock"></i> {{ format_duration(run.RunTime()) }}
             </span>
         {% endif %}
