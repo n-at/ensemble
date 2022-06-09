@@ -865,7 +865,7 @@ func (s *Storage) keyDecryptAll(keys []*structures.Key) []*structures.Key {
 }
 
 func (s *Storage) keyEncrypt(k *structures.Key) (*structures.Key, error) {
-	passwordEncrypted, err := EncryptPassword(k.Password)
+	passwordEncrypted, err := EncryptString(s.config.Secret, k.Password)
 	if err != nil {
 		return nil, err
 	}
