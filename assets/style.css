@@ -98,10 +98,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .dark .spinner-cog {
-    background-color: rgb(34, 34, 34);;
+    background-color: rgb(35, 40, 47);
 }
 .dark .hole {
-    background-color: rgb(34, 34, 34);;
+    background-color: rgb(35, 40, 47);
 }
 
 .spoke {
@@ -134,7 +134,7 @@ h1, h2, h3, h4, h5, h6 {
     width: 150px;
     height: 150px;
     border-radius: 50%;
-    margin-top: -30px;
+    margin-top: -28px;
     margin-left: -30px;
     z-index: 10;
     animation: spin 5s infinite linear;
@@ -142,13 +142,13 @@ h1, h2, h3, h4, h5, h6 {
 .cog + .cog {
     animation-delay:.19s;
     animation: spin2 5s infinite linear;
-    margin-top: 130px;
+    margin-top: 132px;
     margin-left: 0;
 }
 .cog + .cog + .cog {
     animation: spin 5s infinite linear;
-    margin-top: 35px;
-    margin-left:135px;
+    margin-top: 43px;
+    margin-left:138px;
 }
 
 .hole {
