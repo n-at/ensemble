@@ -17,17 +17,17 @@
         </p>
     {% endif %}
     <form method="post" action="/profile" enctype="application/x-www-form-urlencoded">
-        <div class="mb-3">
-            <label for="password" class="form-label">Current password</label>
-            <input type="password" id="password" name="password" class="form-control" value="" required>
+        <div class="form-floating mb-3">
+            <input type="password" id="password" name="password" class="form-control" value="" placeholder="Current password" required>
+            <label for="password">Current password</label>
         </div>
-        <div class="mb-3">
-            <label for="password1" class="form-label">New password</label>
-            <input type="password" id="password1" name="password1" class="form-control" value="" required>
+        <div class="form-floating mb-3">
+            <input type="password" id="password1" name="password1" class="form-control" value="" placeholder="New password" required>
+            <label for="password1">New password</label>
         </div>
-        <div class="mb-3">
-            <label for="password2" class="form-label">Retype new password</label>
-            <input type="password" id="password2" name="password2" class="form-control" value="" required>
+        <div class="form-floating mb-3">
+            <input type="password" id="password2" name="password2" class="form-control" value="" placeholder="New password again" required>
+            <label for="password2">Retype new password</label>
         </div>
         <hr>
         <div class="mb-3 text-end">

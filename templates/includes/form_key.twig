@@ -1,17 +1,17 @@
-<div class="mb-3">
-    <label for="name" class="form-label">Name</label>
-    <input type="text" id="name" name="name" class="form-control" required>
+<div class="form-floating mb-3">
+    <input type="text" id="name" name="name" class="form-control" placeholder="Key name" required>
+    <label for="name">Name</label>
 </div>
-<div class="mb-3">
-    <label for="password" class="form-label">Password</label>
-    <input type="password" id="password" name="password" class="form-control">
+<div class="form-floating mb-3">
+    <input type="password" id="password" name="password" class="form-control" placeholder="Key password">
+    <label for="password">Password</label>
 </div>
-<div class="mb-3 alert alert-info">
+<p class="text-secondary">
     Leave password field blank if private key is not encrypted
-</div>
-<div class="mb-3">
+</p>
+<div class="form-floating mb-3">
+    <textarea id="content" name="content" class="form-control" style="height: 10rem" placeholder="Key content" required></textarea>
     <label for="content">Private key content</label>
-    <textarea id="content" name="content" class="form-control" rows="10" required></textarea>
 </div>
 <hr>
 <div class="mb-3 text-end">

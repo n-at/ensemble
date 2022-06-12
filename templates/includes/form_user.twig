@@ -1,19 +1,19 @@
-<div class="mb-3">
-    <label for="login" class="form-label">Login</label>
-    <input type="text" id="login" name="login" class="form-control" value="{{user_control.Login}}" required>
+<div class="form-floating mb-3">
+    <input type="text" id="login" name="login" class="form-control" value="{{user_control.Login}}" placeholder="Unique user name" required>
+    <label for="login">Login</label>
 </div>
 
 {% if mode == "create" %}
-    <div class="mb-3">
-        <label for="password" class="form-label">Password</label>
-        <input type="password" id="password" name="password" class="form-control" value="" required>
+    <div class="form-floating mb-3">
+        <input type="password" id="password" name="password" class="form-control" value="" placeholder="User password" required>
+        <label for="password">Password</label>
     </div>
 {% elif mode == "edit" %}
-    <div class="mb-3">
-        <label for="password" class="form-label">Password</label>
-        <input type="password" id="password" name="password" class="form-control" value="">
+    <div class="form-floating mb-3">
+        <input type="password" id="password" name="password" class="form-control" value="" placeholder="User password">
+        <label for="password">Password</label>
     </div>
-    <p class="alert alert-info">
+    <p class="text-secondary">
         Leave password field blank to keep current value
     </p>
 {% endif %}
