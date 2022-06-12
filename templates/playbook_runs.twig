@@ -11,7 +11,7 @@
     <h2>{{project.Name}} - {{ playbook.Name | default:playbook.Filename }}</h2>
 
     {% if runs %}
-        <ul class="list-group list-group-hover mb-3 mt-3 ">
+        <ul class="list-group list-group-hover mb-3 mt-3">
             {% for run in runs %}
                 <li class="list-group-item">
                     <div class="row">

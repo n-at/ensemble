@@ -16,6 +16,16 @@ h2 {
     padding: 0 !important;
 }
 
+.title {
+    font-family: Jura, Source Sans Pro, Helvetica Neue, Helvetica, Arial, sans-serif;
+    font-weight: 300;
+    font-size: 1.5rem;
+}
+h1, h2, h3, h4, h5, h6 {
+    font-family: Jura, Source Sans Pro, Helvetica Neue, Helvetica, Arial, sans-serif;
+    font-weight: 300;
+}
+
 /*****************************************************************************/
 /* https://tobiasahlin.com/spinkit/ */
 
