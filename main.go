@@ -103,6 +103,7 @@ func scheduleProjectsUpdate(m *repository.Manager) {
 	if err != nil {
 		log.Fatalf("unable to start projecs update schedule: %s", err)
 	}
+	scheduler.StartAsync()
 }
 
 func addPrivateKeys(s *storage.Storage, km *privatekeys.KeyManager) {
