@@ -1,6 +1,6 @@
 /*.idea/
 /*.iml
-/application.yml
+/.env
 /assets/node_modules/
 /app
 /data/

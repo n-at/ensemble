@@ -17,8 +17,8 @@ go build -a -o app
 
 ## Configuration 
 
-Configuration stored in `application.yml` file.
-See `application.sample.yml` for example configuration.
+Configuration is passed via environment variables or `.env` file.
+See `.env.sample` for variables list and example configuration.
 
 ## Repository file structure
 

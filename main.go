@@ -7,8 +7,8 @@ import (
 	"ensemble/storage"
 	"ensemble/web"
 	"github.com/go-co-op/gocron"
+	_ "github.com/joho/godotenv/autoload"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"os"
 	"time"
 )
@@ -19,6 +19,7 @@ var (
 	repositoryConfig repository.Configuration
 	runnerConfig     runner.Configuration
 	keyManagerConfig privatekeys.Configuration
+	cronUpdate       string
 )
 
 func init() {
@@ -28,47 +29,33 @@ func init() {
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.InfoLevel)
 
-	viper.SetConfigName("application")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("unable to read config file: %s", err)
-	}
-
 	webConfig = web.Configuration{
-		DebugTemplates: false,
-		Listen:         ":3000",
-	}
-	if err := viper.UnmarshalKey("web", &webConfig); err != nil {
-		log.Fatalf("unable to read web configuration: %s", err)
+		DebugTemplates: getEnvOrDefault("ENSEMBLE_WEB_DEBUG_TEMPLATES", "0") != "0",
+		Listen:         getEnvOrDefault("ENSEMBLE_WEB_LISTEN", ":3000"),
 	}
 
 	storageConfig = storage.Configuration{
-		Url:    "",
-		Secret: "",
-	}
-	if err := viper.UnmarshalKey("db", &storageConfig); err != nil {
-		log.Fatalf("unable to read db configuration: %s", err)
+		Url:    getEnvOrDefault("ENSEMBLE_DB_URL", ""),
+		Secret: getEnvOrDefault("ENSEMBLE_DB_SECRET", ""),
 	}
 	if len(storageConfig.Url) == 0 {
-		log.Fatalf("configuration db.url required")
+		log.Fatalf("ENSEMBLE_DB_URL required")
 	}
 
 	keyManagerConfig = privatekeys.Configuration{
-		Path:         "",
-		AddKeyScript: "./ssh_add_key.sh",
-		AuthSock:     "",
-	}
-	if err := viper.UnmarshalKey("keys", &keyManagerConfig); err != nil {
-		log.Fatalf("unable to read key manager configuration: %s", err)
+		Path:         getEnvOrDefault("ENSEMBLE_KEYS_PATH", ""),
+		AddKeyScript: getEnvOrDefault("ENSEMBLE_KEYS_SCRIPT", "./ssh_add_key.sh"),
+		AuthSock:     getEnvOrDefault("ENSEMBLE_KEYS_SOCK", ""),
 	}
 	if len(keyManagerConfig.Path) == 0 {
-		log.Fatalf("configuration keys.path required")
+		log.Fatalf("ENSEMBLE_KEYS_PATH required")
 	}
 
-	path := viper.GetString("path")
+	cronUpdate = getEnvOrDefault("ENSEMBLE_CRON", "0 3 * * *")
+
+	path := os.Getenv("ENSEMBLE_PATH")
 	if len(path) == 0 {
-		log.Fatalf("configuration path required")
+		log.Fatalf("ENSEMBLE_PATH required")
 	}
 
 	repositoryConfig = repository.Configuration{
@@ -109,13 +96,8 @@ func main() {
 ///////////////////////////////////////////////////////////////////////////////
 
 func scheduleProjectsUpdate(m *repository.Manager) {
-	cron := viper.GetString("update")
-	if len(cron) == 0 {
-		cron = "0 3 * * *"
-	}
-
 	scheduler := gocron.NewScheduler(time.Now().Location())
-	_, err := scheduler.Cron(cron).Do(func() {
+	_, err := scheduler.Cron(cronUpdate).Do(func() {
 		m.UpdateAll()
 	})
 	if err != nil {
@@ -135,5 +117,14 @@ func addPrivateKeys(s *storage.Storage, km *privatekeys.KeyManager) {
 		if err := km.AddKey(key); err != nil {
 			log.Errorf("unable lo add private key %s: %s", key.Name, err)
 		}
+	}
+}
+
+func getEnvOrDefault(key, def string) string {
+	value := os.Getenv(key)
+	if len(value) == 0 {
+		return def
+	} else {
+		return value
 	}
 }
