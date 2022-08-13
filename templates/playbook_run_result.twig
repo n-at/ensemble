@@ -19,8 +19,26 @@
 {% block content %}
     {% include "includes/breadcrumbs/project_playbook_run_result.twig" %}
 
-    <h1>Playbook run result</h1>
-    <h2>{{project.Name}} - {{ playbook.Name | default:playbook.Filename }}</h2>
+    <div class="row">
+        <div class="col-10">
+            <h1>Playbook run result</h1>
+            <h2>{{project.Name}} - {{ playbook.Name | default:playbook.Filename }}</h2>
+        </div>
+        <div class="col-2 text-end">
+            {% if run.Mode == 1 %}
+                {% set repeat_href = "check" %}
+            {% elif run.Mode == 2 %}
+                {% set repeat_href = "execute" %}
+            {% elif run.Mode == 3 %}
+                {% set repeat_href = "syntax" %}
+            {% endif %}
+            {% if repeat_href and (run.Result == 2 or run.Result == 3) %}
+                <a class="btn btn-sm btn-outline-primary" href="/projects/playbooks/{{project.Id}}/run/{{playbook.Id}}/{{ repeat_href }}">
+                    <i class="bi bi-arrow-repeat"></i> Repeat
+                </a>
+            {% endif %}
+        </div>
+    </div>
 
     <div class="mb-3 mt-3 card">
         <div class="card-body">
