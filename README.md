@@ -68,3 +68,20 @@ Each playbook can contain name and description in front matter comment, for exam
 #...
 ---
 ```
+
+## Uses
+
+* [alessio/shellescape](https://github.com/alessio/shellescape) - MIT
+* [flosch/pongo2](https://github.com/flosch/pongo2) - MIT
+* [go-co-op/gocron](https://github.com/go-co-op/gocron) - MIT
+* [google/uuid](https://github.com/google/uuid) - BSD-3-Clause
+* [jmoiron/sqlx](https://github.com/jmoiron/sqlx) - MIT
+* [joho/godotenv](https://github.com/joho/godotenv) - MIT
+* [labstack/echo](https://github.com/labstack/echo) - MIT
+* [lib/pq](https://github.com/lib/pq) - MIT
+* [sirupsen/logrus](https://github.com/sirupsen/logrus) - MIT
+* [drudru/ansi_up](https://github.com/drudru/ansi_up) - MIT
+* [twbs/bootstrap](https://github.com/twbs/bootstrap) - MIT
+* [twbs/icons](https://github.com/twbs/icons) - MIT
+* [rtfpessoa/diff2html](https://github.com/rtfpessoa/diff2html) - MIT
+* [jquery](https://github.com/jquery/jquery) - MIT
