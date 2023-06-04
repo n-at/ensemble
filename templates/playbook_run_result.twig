@@ -86,7 +86,7 @@
         <div class="card border-danger mb-3">
             <h5 class="card-header text-white bg-danger">Run error</h5>
             <div class="card-body">
-                <pre><code class="ansi-output">{{ run_result.Error }}</code></pre>
+                <pre class="pre-wrap"><code class="ansi-output">{{ run_result.Error }}</code></pre>
             </div>
         </div>
     {% endif %}
@@ -182,7 +182,7 @@
         <div class="card mb-3">
             <h5 class="card-header">Run result</h5>
             <div class="card-body">
-                <pre><code>{{ run_result.Output }}</code></pre>
+                <pre class="pre-wrap"><code>{{ run_result.Output }}</code></pre>
             </div>
         </div>
     {% endif %}
