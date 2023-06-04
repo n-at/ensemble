@@ -1,22 +1,29 @@
 (() => {
 
-    const navbar = document.getElementById('navbar');
-
     const darkModeSwitch = document.getElementById('dark-mode');
-    darkModeSwitch.checked = darkmode.getSavedColorScheme() === 'dark';
+    darkModeSwitch.checked = getCurrentColorScheme() === 'dark';
     darkModeSwitch.onchange = () => {
-        darkmode.setDarkMode(darkModeSwitch.checked, true);
-        applyDarkTheme(darkModeSwitch.checked);
+        const theme = darkModeSwitch.checked ? 'dark' : 'light';
+        applyDarkTheme(theme);
     };
-    applyDarkTheme(darkModeSwitch.checked);
+    applyDarkTheme(getCurrentColorScheme());
 
-    function applyDarkTheme(value) {
-        if (value) {
-            navbar.classList.add('navbar-dark', 'bg-dark');
-            navbar.classList.remove('navbar-light', 'bg-light');
-        } else {
-            navbar.classList.add('navbar-light', 'bg-light');
-            navbar.classList.remove('navbar-dark', 'bg-dark');
+    function applyDarkTheme(theme) {
+        const html = document.getElementsByTagName('html')[0];
+        html.setAttribute('data-bs-theme', theme);
+
+        window.localStorage.__dark_theme = theme;
+    }
+
+    function getCurrentColorScheme() {
+        const theme = window.localStorage.__dark_theme;
+        if (!theme) {
+            return isSystemDarkMode() ? 'dark' : 'light';
         }
+        return theme;
+    }
+
+    function isSystemDarkMode() {
+        return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
     }
 })();
