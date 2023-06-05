@@ -5,7 +5,7 @@ h2 {
     font-size: 1.5em;
 }
 
-.dark .list-group-hover .list-group-item:hover {
+html[data-bs-theme="dark"] .list-group-hover .list-group-item:hover {
     background-color: rgba(255, 255, 255, .05);
 }
 .list-group-hover .list-group-item:hover {
@@ -101,10 +101,10 @@ h1, h2, h3, h4, h5, h6 {
     z-index:10000;
 }
 
-.dark .spinner-cog {
+html[data-bs-theme="dark"] .spinner-cog {
     background-color: rgb(35, 40, 47);
 }
-.dark .hole {
+html[data-bs-theme="dark"] .hole {
     background-color: rgb(35, 40, 47);
 }
 
