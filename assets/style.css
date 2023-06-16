@@ -91,28 +91,28 @@ h1, h2, h3, h4, h5, h6 {
 
 .spinner-cog {
     width: 250px;
-    height:250px;
+    height: 250px;
     position: relative;
     margin: 2rem auto 1rem auto;
     border-radius:30%;
     border: solid 10px #6c757d;
     background-color: white;
-    overflow:hidden;
-    z-index:10000;
+    overflow: hidden;
+    z-index: 10000;
 }
 
 html[data-bs-theme="dark"] .spinner-cog {
-    background-color: rgb(35, 40, 47);
+    background-color: #212529;
 }
 html[data-bs-theme="dark"] .hole {
-    background-color: rgb(35, 40, 47);
+    background-color: #212529;
 }
 
 .spoke {
     background-color: #6c757d;
     position: absolute;
     height: 175px;
-    width:30px;
+    width: 30px;
     margin-left: -15px;
     margin-top: -12.5px;
     left: 50%;
@@ -133,7 +133,7 @@ html[data-bs-theme="dark"] .hole {
 }
 
 .cog {
-    position:absolute;
+    position: absolute;
     background-color: #6c757d;
     width: 150px;
     height: 150px;
@@ -144,7 +144,7 @@ html[data-bs-theme="dark"] .hole {
     animation: spin 5s infinite linear;
 }
 .cog + .cog {
-    animation-delay:.19s;
+    animation-delay: .19s;
     animation: spin2 5s infinite linear;
     margin-top: 132px;
     margin-left: 0;
