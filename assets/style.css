@@ -144,8 +144,8 @@ html[data-bs-theme="dark"] .hole {
     animation: spin 5s infinite linear;
 }
 .cog + .cog {
-    animation-delay: .19s;
     animation: spin2 5s infinite linear;
+    animation-delay: .19s;
     margin-top: 132px;
     margin-left: 0;
 }
