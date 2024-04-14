@@ -42,7 +42,7 @@
     <div class="col-4 text-end">
         {% if not run.FinishTime.IsZero() %}
             <span title="Duration">
-                <i class="bi bi-clock"></i> {{ format_duration(run.RunTime()) }}
+                <i class="bi bi-clock"></i> {{ run.RunTime() | format_duration }}
             </span>
         {% endif %}
     </div>

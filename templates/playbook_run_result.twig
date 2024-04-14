@@ -87,7 +87,7 @@
         <div class="card border-danger mb-3">
             <h5 class="card-header text-white bg-danger">Run error</h5>
             <div class="card-body">
-                <pre class="pre-wrap"><code class="ansi-output">{{ run_result.Error }}</code></pre>
+                <pre><code class="ansi-output">{{ run_result.Error | split_output }}</code></pre>
             </div>
         </div>
     {% endif %}
@@ -147,7 +147,7 @@
 
             <h3>Play: {{ info.Name }}</h3>
             <p>
-                <i class="bi bi-clock" title="Duration"></i> {{ format_duration(info.Duration.RunTime()) }}
+                <i class="bi bi-clock" title="Duration"></i> {{ info.Duration.RunTime() | format_duration }}
             </p>
 
             {% for task in tasks %}
@@ -159,7 +159,7 @@
                             <i class="bi bi-play-circle" title="Task"></i> {{ task_info.Name }}
                         </div>
                         <div>
-                            <i class="bi bi-clock" title="Duration"></i> {{ format_duration(task_info.Duration.RunTime()) }}
+                            <i class="bi bi-clock" title="Duration"></i> {{ task_info.Duration.RunTime() | format_duration }}
                         </div>
                     </div>
                     <div class="card-body">
@@ -183,7 +183,7 @@
         <div class="card mb-3">
             <h5 class="card-header">Run result</h5>
             <div class="card-body">
-                <pre class="pre-wrap"><code>{{ run_result.Output }}</code></pre>
+                <pre><code class="ansi-output">{{ run_result.Output | split_output }}</code></pre>
             </div>
         </div>
     {% endif %}
