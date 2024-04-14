@@ -9,6 +9,7 @@
     <h1>New private key</h1>
 
     <form method="post" action="/keys/new" enctype="application/x-www-form-urlencoded">
+        <input type="hidden" name="_ensemble_csrf" value="{{ _csrf_token }}">
         {% include "includes/form_key.twig" %}
     </form>
 

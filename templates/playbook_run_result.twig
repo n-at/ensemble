@@ -72,6 +72,7 @@
                 <div class="lead">Playbook running</div>
             </div>
             <form method="post" action="/projects/playbooks/{{project.Id}}/runs/{{playbook.Id}}/terminate/{{run.Id}}" enctype="application/x-www-form-urlencoded">
+                <input type="hidden" name="_ensemble_csrf" value="{{ _csrf_token }}">
                 <div class="text-center mb-3">
                     <button type="submit" class="btn btn-outline-danger">
                         <i class="bi bi-power"></i> Stop execution

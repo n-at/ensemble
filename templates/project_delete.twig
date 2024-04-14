@@ -9,6 +9,7 @@
     <h1>Delete project</h1>
 
     <form method="post" action="/projects/delete/{{ project.Id }}" enctype="application/x-www-form-urlencoded">
+        <input type="hidden" name="_ensemble_csrf" value="{{ _csrf_token }}">
         <p class="lead">
             Confirm deletion of project &quot;{{ project.Name }}&quot;
         </p>

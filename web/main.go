@@ -7,6 +7,7 @@ import (
 	"ensemble/storage"
 	"github.com/flosch/pongo2/v4"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -46,6 +47,21 @@ func New(configuration Configuration, store *storage.Storage, manager *repositor
 		keyManager: keyManager,
 	}
 
+	s.e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+		TokenLookup:    "form:_ensemble_csrf",
+		CookiePath:     "/",
+		CookieName:     "_ensemble_csrf",
+		CookieHTTPOnly: true,
+	}))
+	s.e.Use(middleware.SecureWithConfig(middleware.SecureConfig{
+		XSSProtection:         "1; mode=block",
+		ContentTypeNosniff:    "nosniff",
+		XFrameOptions:         "SAMEORIGIN",
+		HSTSMaxAge:            0,
+		HSTSExcludeSubdomains: false,
+		HSTSPreloadEnabled:    false,
+		ContentSecurityPolicy: "connect-src 'self' blob:; font-src 'self' data:; form-action 'self'; frame-ancestors 'self'; frame-src 'self'; img-src 'self' data:; manifest-src 'self'; media-src 'self'; object-src 'self'; child-src 'self' blob:",
+	}))
 	s.e.Use(s.contextCustomizationMiddleware)
 
 	s.e.GET("/", s.index)

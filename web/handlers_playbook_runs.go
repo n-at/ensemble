@@ -21,10 +21,11 @@ func (s *Server) playbookRuns(c echo.Context) error {
 	}
 
 	return c.Render(http.StatusOK, "templates/playbook_runs.twig", pongo2.Context{
-		"user":     context.user,
-		"project":  context.project,
-		"playbook": context.playbook,
-		"runs":     runs,
+		"_csrf_token": c.Get("csrf"),
+		"user":        context.user,
+		"project":     context.project,
+		"playbook":    context.playbook,
+		"runs":        runs,
 	})
 }
 
@@ -52,6 +53,7 @@ func (s *Server) playbookRunResult(c echo.Context) error {
 	}
 
 	return c.Render(http.StatusOK, "templates/playbook_run_result.twig", pongo2.Context{
+		"_csrf_token":        c.Get("csrf"),
 		"user":               context.user,
 		"project":            context.project,
 		"playbook":           context.playbook,
@@ -66,10 +68,11 @@ func (s *Server) playbookRunDeleteForm(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
 	return c.Render(http.StatusOK, "templates/playbook_run_delete.twig", pongo2.Context{
-		"user":     context.user,
-		"project":  context.project,
-		"playbook": context.playbook,
-		"run":      context.playbookRun,
+		"_csrf_token": c.Get("csrf"),
+		"user":        context.user,
+		"project":     context.project,
+		"playbook":    context.playbook,
+		"run":         context.playbookRun,
 	})
 }
 

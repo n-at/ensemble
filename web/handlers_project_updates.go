@@ -18,9 +18,10 @@ func (s *Server) projectUpdates(c echo.Context) error {
 	}
 
 	return c.Render(http.StatusOK, "templates/project_updates.twig", pongo2.Context{
-		"user":    context.user,
-		"project": context.project,
-		"updates": updates,
+		"_csrf_token": c.Get("csrf"),
+		"user":        context.user,
+		"project":     context.project,
+		"updates":     updates,
 	})
 }
 
@@ -28,9 +29,10 @@ func (s *Server) projectUpdateLog(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
 	return c.Render(http.StatusOK, "templates/project_update_log.twig", pongo2.Context{
-		"user":    context.user,
-		"project": context.project,
-		"update":  context.projectUpdate,
+		"_csrf_token": c.Get("csrf"),
+		"user":        context.user,
+		"project":     context.project,
+		"update":      context.projectUpdate,
 	})
 }
 
@@ -38,9 +40,10 @@ func (s *Server) projectUpdateDeleteForm(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
 	return c.Render(http.StatusOK, "templates/project_update_delete.twig", pongo2.Context{
-		"user":    context.user,
-		"project": context.project,
-		"update":  context.projectUpdate,
+		"_csrf_token": c.Get("csrf"),
+		"user":        context.user,
+		"project":     context.project,
+		"update":      context.projectUpdate,
 	})
 }
 

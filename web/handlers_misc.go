@@ -14,6 +14,7 @@ func (s *Server) version(c echo.Context) error {
 		return errors.New("unable to read build info")
 	}
 	return c.Render(http.StatusOK, "templates/version.twig", pongo2.Context{
-		"build": buildInfo,
+		"_csrf_token": c.Get("csrf"),
+		"build":       buildInfo,
 	})
 }

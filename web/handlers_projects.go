@@ -47,8 +47,9 @@ func (s *Server) projects(c echo.Context) error {
 	}
 
 	return c.Render(http.StatusOK, "templates/projects.twig", pongo2.Context{
-		"user":     context.user,
-		"projects": projectsWithInfo,
+		"_csrf_token": c.Get("csrf"),
+		"user":        context.user,
+		"projects":    projectsWithInfo,
 	})
 }
 
@@ -57,7 +58,8 @@ func (s *Server) projectNewForm(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
 	return c.Render(http.StatusOK, "templates/project_new.twig", pongo2.Context{
-		"user": context.user,
+		"_csrf_token": c.Get("csrf"),
+		"user":        context.user,
 	})
 }
 
@@ -87,18 +89,20 @@ func (s *Server) projectNewSubmit(c echo.Context) error {
 	if err != nil {
 		log.Errorf("projectNewSubmit error: %s", err)
 		return c.Render(http.StatusOK, "templates/project_new.twig", pongo2.Context{
-			"user":    context.user,
-			"project": project,
-			"error":   err,
+			"_csrf_token": c.Get("csrf"),
+			"user":        context.user,
+			"project":     project,
+			"error":       err,
 		})
 	}
 
 	if err := s.store.ProjectInsert(project); err != nil {
 		log.Errorf("projectNewSubmit unable to save project: %s", err)
 		return c.Render(http.StatusOK, "templates/project_new.twig", pongo2.Context{
-			"user":    context.user,
-			"project": project,
-			"error":   err,
+			"_csrf_token": c.Get("csrf"),
+			"user":        context.user,
+			"project":     project,
+			"error":       err,
 		})
 	}
 
@@ -108,9 +112,10 @@ func (s *Server) projectNewSubmit(c echo.Context) error {
 			log.Errorf("projectNewSubmit project %s delete error: %s", project.Id, err)
 		}
 		return c.Render(http.StatusOK, "templates/project_new.twig", pongo2.Context{
-			"user":    context.user,
-			"project": project,
-			"error":   err,
+			"_csrf_token": c.Get("csrf"),
+			"user":        context.user,
+			"project":     project,
+			"error":       err,
 		})
 	}
 
@@ -122,8 +127,9 @@ func (s *Server) projectEditForm(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
 	return c.Render(http.StatusOK, "templates/project_edit.twig", pongo2.Context{
-		"user":    context.user,
-		"project": context.project,
+		"_csrf_token": c.Get("csrf"),
+		"user":        context.user,
+		"project":     context.project,
 	})
 }
 
@@ -192,9 +198,10 @@ func (s *Server) projectEditSubmit(c echo.Context) error {
 	if err != nil {
 		log.Errorf("projectEditSubmit project %s error: %s", context.project.Id, err)
 		return c.Render(http.StatusOK, "templates/project_edit.twig", pongo2.Context{
-			"user":    context.user,
-			"project": project,
-			"error":   err,
+			"_csrf_token": c.Get("csrf"),
+			"user":        context.user,
+			"project":     project,
+			"error":       err,
 		})
 	}
 
@@ -202,9 +209,10 @@ func (s *Server) projectEditSubmit(c echo.Context) error {
 	if err != nil {
 		log.Errorf("projectEditSubmit unable to update project: %s", err)
 		return c.Render(http.StatusOK, "templates/project_edit.twig", pongo2.Context{
-			"user":    context.user,
-			"project": project,
-			"error":   err,
+			"_csrf_token": c.Get("csrf"),
+			"user":        context.user,
+			"project":     project,
+			"error":       err,
 		})
 	}
 
@@ -216,8 +224,9 @@ func (s *Server) projectDeleteForm(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
 	return c.Render(http.StatusOK, "templates/project_delete.twig", pongo2.Context{
-		"user":    context.user,
-		"project": context.project,
+		"_csrf_token": c.Get("csrf"),
+		"user":        context.user,
+		"project":     context.project,
 	})
 }
 

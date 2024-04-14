@@ -37,9 +37,10 @@ func (s *Server) playbooks(c echo.Context) error {
 	}
 
 	return c.Render(http.StatusOK, "templates/playbooks.twig", pongo2.Context{
-		"user":      context.user,
-		"project":   context.project,
-		"playbooks": info,
+		"_csrf_token": c.Get("csrf"),
+		"user":        context.user,
+		"project":     context.project,
+		"playbooks":   info,
 	})
 }
 

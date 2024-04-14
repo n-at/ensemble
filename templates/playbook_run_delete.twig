@@ -11,14 +11,13 @@
     <h2>{{project.Name}} - {{ playbook.Name | default:playbook.Filename }}</h2>
 
     <form method="post" action="/projects/playbooks/{{project.Id}}/runs/{{playbook.Id}}/delete/{{run.Id}}" enctype="application/x-www-form-urlencoded">
+        <input type="hidden" name="_ensemble_csrf" value="{{ _csrf_token }}">
         <p class="lead">
             Confirm deletion of playbook run on {{run.StartTime.Format("02.01.2006 15:04:05")}}
         </p>
         <hr>
         <div class="mb-3 text-end">
-            <button type="submit" class="btn btn-danger">
-                Delete playbook run
-            </button>
+            <button type="submit" class="btn btn-danger">Delete playbook run</button>
         </div>
     </form>
 {% endblock %}

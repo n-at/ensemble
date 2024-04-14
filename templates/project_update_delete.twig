@@ -17,6 +17,7 @@
     <hr>
 
     <form method="post" action="/projects/updates/{{ project.Id }}/delete/{{ update.Id }}" enctype="application/x-www-form-urlencoded">
+        <input type="hidden" name="_ensemble_csrf" value="{{ _csrf_token }}">
         <div class="mb-3 text-end">
             <button type="submit" class="btn btn-danger">Delete update log</button>
         </div>

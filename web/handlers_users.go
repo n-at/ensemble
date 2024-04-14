@@ -28,15 +28,17 @@ func (s *Server) users(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
 	return c.Render(http.StatusOK, "templates/users.twig", pongo2.Context{
-		"user":  context.user,
-		"users": users,
+		"_csrf_token": c.Get("csrf"),
+		"user":        context.user,
+		"users":       users,
 	})
 }
 
 func (s *Server) userNewForm(c echo.Context) error {
 	context := c.(*EnsembleContext)
 	return c.Render(http.StatusOK, "templates/user_new.twig", pongo2.Context{
-		"user": context.user,
+		"_csrf_token": c.Get("csrf"),
+		"user":        context.user,
 	})
 }
 
@@ -68,6 +70,7 @@ func (s *Server) userNewSubmit(c echo.Context) error {
 	if err := s.store.UserInsert(&user); err != nil {
 		log.Errorf("userNewSubmit user save error: %s", err)
 		return c.Render(http.StatusOK, "templates/user_new.twig", pongo2.Context{
+			"_csrf_token":  c.Get("csrf"),
 			"user":         context.user,
 			"user_control": &user,
 			"error":        err,
@@ -80,6 +83,7 @@ func (s *Server) userNewSubmit(c echo.Context) error {
 func (s *Server) userEditForm(c echo.Context) error {
 	context := c.(*EnsembleContext)
 	return c.Render(http.StatusOK, "templates/user_edit.twig", pongo2.Context{
+		"_csrf_token":  c.Get("csrf"),
 		"user":         context.user,
 		"user_control": context.userControl,
 	})
@@ -117,6 +121,7 @@ func (s *Server) userEditSubmit(c echo.Context) error {
 	if err := s.store.UserUpdate(user); err != nil {
 		log.Errorf("userEditSubmit user %s save error: %s", context.userControl.Id, err)
 		return c.Render(http.StatusOK, "templates/user_edit.twig", pongo2.Context{
+			"_csrf_token":  c.Get("csrf"),
 			"user":         context.user,
 			"user_control": user,
 			"error":        err,
@@ -134,6 +139,7 @@ func (s *Server) userDeleteForm(c echo.Context) error {
 	}
 
 	return c.Render(http.StatusOK, "templates/user_delete.twig", pongo2.Context{
+		"_csrf_token":  c.Get("csrf"),
 		"user":         context.user,
 		"user_control": context.userControl,
 	})
@@ -188,6 +194,7 @@ func (s *Server) userProjectsForm(c echo.Context) error {
 	}
 
 	return c.Render(http.StatusOK, "templates/user_projects.twig", pongo2.Context{
+		"_csrf_token":  c.Get("csrf"),
 		"user":         context.user,
 		"user_control": context.userControl,
 		"projects":     info,

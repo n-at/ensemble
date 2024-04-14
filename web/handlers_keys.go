@@ -20,8 +20,9 @@ func (s *Server) keys(c echo.Context) error {
 	}
 
 	return c.Render(http.StatusOK, "templates/keys.twig", pongo2.Context{
-		"user": context.user,
-		"keys": keys,
+		"_csrf_token": c.Get("csrf"),
+		"user":        context.user,
+		"keys":        keys,
 	})
 }
 
@@ -29,7 +30,8 @@ func (s *Server) keyNewForm(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
 	return c.Render(http.StatusOK, "templates/key_new.twig", pongo2.Context{
-		"user": context.user,
+		"_csrf_token": c.Get("csrf"),
+		"user":        context.user,
 	})
 }
 
@@ -64,8 +66,9 @@ func (s *Server) keyDeleteForm(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
 	return c.Render(http.StatusOK, "templates/key_delete.twig", pongo2.Context{
-		"user": context.user,
-		"key":  context.key,
+		"_csrf_token": c.Get("csrf"),
+		"user":        context.user,
+		"key":         context.key,
 	})
 }
 

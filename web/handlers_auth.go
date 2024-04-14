@@ -19,7 +19,9 @@ func (s *Server) loginForm(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/")
 	}
 
-	return c.Render(http.StatusOK, "templates/login.twig", pongo2.Context{})
+	return c.Render(http.StatusOK, "templates/login.twig", pongo2.Context{
+		"_csrf_token": c.Get("csrf"),
+	})
 }
 
 func (s *Server) loginSubmit(c echo.Context) error {
@@ -37,16 +39,18 @@ func (s *Server) loginSubmit(c echo.Context) error {
 	if err != nil || user == nil {
 		log.Errorf("loginSubmit user %s get user error: %s", login, err)
 		return c.Render(http.StatusOK, "templates/login.twig", pongo2.Context{
-			"login": login,
-			"error": "Incorrect login or password",
+			"_csrf_token": c.Get("csrf"),
+			"login":       login,
+			"error":       "Incorrect login or password",
 		})
 	}
 
 	if !storage.CheckPassword(password, user.Password) {
 		log.Warnf("loginSubmit user %s check password error", login)
 		return c.Render(http.StatusOK, "templates/login.twig", pongo2.Context{
-			"login": login,
-			"error": "Incorrect login or password",
+			"_csrf_token": c.Get("csrf"),
+			"login":       login,
+			"error":       "Incorrect login or password",
 		})
 	}
 
@@ -54,8 +58,9 @@ func (s *Server) loginSubmit(c echo.Context) error {
 	if err != nil {
 		log.Errorf("loginSubmit user %s session creation error: %s", login, err)
 		return c.Render(http.StatusOK, "templates/login.twig", pongo2.Context{
-			"login": login,
-			"error": err.Error(),
+			"_csrf_token": c.Get("csrf"),
+			"login":       login,
+			"error":       err.Error(),
 		})
 	}
 
@@ -76,8 +81,9 @@ func (s *Server) profileForm(c echo.Context) error {
 	context := c.(*EnsembleContext)
 
 	return c.Render(http.StatusOK, "templates/profile.twig", pongo2.Context{
-		"user": context.user,
-		"done": c.QueryParam("done"),
+		"_csrf_token": c.Get("csrf"),
+		"user":        context.user,
+		"done":        c.QueryParam("done"),
 	})
 }
 
