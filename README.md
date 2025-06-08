@@ -71,7 +71,7 @@ Each playbook can contain name and description in front matter comment, for exam
 
 ## Uses
 
-* [alessio/shellescape](https://github.com/alessio/shellescape) - MIT
+* [alessio/shellescape](https://al.essio.dev/pkg/shellescape) - MIT
 * [flosch/pongo2](https://github.com/flosch/pongo2) - MIT
 * [go-co-op/gocron](https://github.com/go-co-op/gocron) - MIT
 * [google/uuid](https://github.com/google/uuid) - BSD-3-Clause
