@@ -70,6 +70,7 @@ func New(configuration Configuration, store *storage.Storage, manager *repositor
 	s.e.GET("/login", s.loginForm)
 	s.e.POST("/login", s.loginSubmit)
 	s.e.GET("/logout", s.logout)
+	s.e.GET("/auth", s.authStatus)
 
 	//misc
 	s.e.GET("/version", s.version)

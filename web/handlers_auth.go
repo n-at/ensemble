@@ -69,6 +69,21 @@ func (s *Server) loginSubmit(c echo.Context) error {
 	return c.Redirect(http.StatusFound, "/")
 }
 
+func (s *Server) authStatus(c echo.Context) error {
+	context := c.(*EnsembleContext)
+
+	if context.session == nil || len(context.session.UserId) == 0 {
+		return c.JSON(http.StatusOK, false)
+	}
+
+	user, err := s.store.UserGet(context.session.UserId)
+	if err != nil || user == nil {
+		return c.JSON(http.StatusOK, false)
+	}
+
+	return c.JSON(http.StatusOK, true)
+}
+
 func (s *Server) logout(c echo.Context) error {
 	context := c.(*EnsembleContext)
 	context.DeleteSessionId()

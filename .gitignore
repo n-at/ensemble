@@ -1,6 +1,7 @@
 /*.idea/
 /*.iml
 /.env
+/graphify-out/
 /assets/node_modules/
 /app
 /data/
